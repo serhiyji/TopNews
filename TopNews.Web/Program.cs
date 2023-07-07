@@ -1,4 +1,6 @@
 using TopNews.Infrastructure;
+using TopNews.Infrastructure.Initializers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Create connection string
@@ -32,5 +34,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+await UserAndRolesInitializers.SeedUserAndRole(app);
 
 app.Run();
