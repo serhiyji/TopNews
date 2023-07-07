@@ -6,6 +6,9 @@ string connStr = builder.Configuration.GetConnectionString("DefaultConnection");
 // Database context
 builder.Services.AddDbContext(connStr);
 
+// Add Infrastructure services
+builder.Services.AddInfrastructureServices();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
