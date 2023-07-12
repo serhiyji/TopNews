@@ -39,6 +39,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-//await UserAndRolesInitializers.SeedUserAndRole(app);
+await UserAndRolesInitializers.SeedUserAndRole(app);
 
 app.Run();

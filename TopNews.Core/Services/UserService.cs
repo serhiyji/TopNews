@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,6 +67,14 @@ namespace TopNews.Core.Services
                 };
             }
         }
-
+        public async Task<ServiceResponse> SignOutAsync()
+        {
+            await _signInManager.SignOutAsync();
+            return new ServiceResponse()
+            {
+                Success = true,
+                Message = "FALSE",
+            };
+        }
     }
 }

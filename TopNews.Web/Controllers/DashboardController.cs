@@ -47,5 +47,16 @@ namespace TopNews.Web.Controllers
             ViewBag.AuthError = valationReslt.Errors[0];
             return View(model); 
         }
+
+        [HttpPost]
+        public async Task<IActionResult> LogOut()
+        {
+            ServiceResponse response = await _userService.SignOutAsync();
+            if (response.Success)
+            {
+                return RedirectToAction(nameof(SignIn));
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
