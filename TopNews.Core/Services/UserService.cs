@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +16,13 @@ namespace TopNews.Core.Services
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IMapper _mapper;
 
-        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
+        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMapper mapper)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         public async Task<ServiceResponse> LoginUserAsync(UserLoginDTO model)
@@ -73,6 +77,20 @@ namespace TopNews.Core.Services
             return new ServiceResponse()
             {
                 Success = true,
+            };
+        }
+
+        public async Task<ServiceResponse> GetAllAsync()
+        {
+            List<AppUser> users = await _userManager.Users.ToListAsync();
+
+            List<UsersDto> mappedUsers = users.Select(u => _mapper.Map<AppUser, UsersDto>(u)).ToList();
+
+            return new ServiceResponse()
+            {
+                Success = true,
+                Message = "All Users loaded",
+                Payload = mappedUsers
             };
         }
     }

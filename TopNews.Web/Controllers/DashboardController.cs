@@ -63,5 +63,11 @@ namespace TopNews.Web.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAllAsync();
+            return View();
+        }
     }
 }
