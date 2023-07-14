@@ -83,8 +83,12 @@ namespace TopNews.Core.Services
         public async Task<ServiceResponse> GetAllAsync()
         {
             List<AppUser> users = await _userManager.Users.ToListAsync();
-
             List<UsersDto> mappedUsers = users.Select(u => _mapper.Map<AppUser, UsersDto>(u)).ToList();
+            
+            for (int i = 0; i < mappedUsers.Count; i++)
+            {
+                mappedUsers[i].Role = string.Join(", ", _userManager.GetRolesAsync(users[i]).Result);
+            }
 
             return new ServiceResponse()
             {

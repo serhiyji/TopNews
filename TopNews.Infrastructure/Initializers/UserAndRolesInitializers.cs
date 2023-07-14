@@ -35,7 +35,7 @@ namespace TopNews.Infrastructure.Initializers
                         PhoneNumber = "+xx(xxx)xxx-xx-xx",
                         PhoneNumberConfirmed = true,
                     };
-
+                    
                     context.Roles.AddAsync(
                         new IdentityRole()
                         {
