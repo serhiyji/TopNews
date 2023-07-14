@@ -69,11 +69,10 @@ namespace TopNews.Core.Services
         }
         public async Task<ServiceResponse> SignOutAsync()
         {
-            await _signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync(); 
             return new ServiceResponse()
             {
                 Success = true,
-                Message = "FALSE",
             };
         }
     }
