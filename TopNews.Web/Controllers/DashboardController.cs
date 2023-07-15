@@ -67,7 +67,7 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _userService.GetAllAsync();
-            return View();
+            return View(result.Payload);
         }
     }
 }
