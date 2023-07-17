@@ -25,8 +25,7 @@ namespace TopNews.Infrastructure.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            var userManager = this.GetService<IServiceScopeFactory>().CreateScope().ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-
+            /*var userManager = this.GetService<IServiceScopeFactory>().CreateScope().ServiceProvider.GetRequiredService<UserManager<AppUser>>();
             AppUser admin = new AppUser()
             {
                 FirstName = "John",
@@ -49,7 +48,7 @@ namespace TopNews.Infrastructure.Context
             if (adminResult.Succeeded)
             {
                 userManager.AddToRoleAsync(admin, "Administrator").Wait();
-            }
+            }*/
         }
     }
 }
