@@ -71,7 +71,7 @@ namespace TopNews.Core.Services
                 mappedUsers[i].Role = string.Join(", ", _userManager.GetRolesAsync(users[i]).Result);
             }
 
-            return new ServiceResponse(true, "All Users loaded", mappedUsers);
+            return new ServiceResponse(true, "All Users loaded", payload: mappedUsers);
         }
         public async Task<ServiceResponse> GetUserByIdAsync(string Id)
         {
@@ -82,7 +82,7 @@ namespace TopNews.Core.Services
             }
             var mappedUser = _mapper.Map<AppUser, UpdateUserDto>(user);
 
-            return new ServiceResponse(true, "User succesfully loaded", mappedUser);
+            return new ServiceResponse(true, "User succesfully loaded", payload: mappedUser);
         }
 
         #region Change data users
