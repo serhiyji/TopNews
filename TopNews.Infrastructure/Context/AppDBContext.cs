@@ -24,6 +24,32 @@ namespace TopNews.Infrastructure.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            var userManager = this.GetService<IServiceScopeFactory>().CreateScope().ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+            AppUser admin = new AppUser()
+            {
+                FirstName = "John",
+                LastName = "Connor",
+                UserName = "admin@email.com",
+                Email = "admin@email.com",
+                EmailConfirmed = true,
+                PhoneNumber = "+xx(xxx)xxx-xx-xx",
+                PhoneNumberConfirmed = true,
+            };
+            this.Roles.AddAsync(
+                new IdentityRole()
+                {
+                    Name = "Administrator",
+                    NormalizedName = "ADMINISTRATOR"
+                }
+            );
+            this.SaveChanges();
+            IdentityResult adminResult = userManager.CreateAsync(admin, "Qwerty-1").Result;
+            if (adminResult.Succeeded)
+            {
+                userManager.AddToRoleAsync(admin, "Administrator").Wait();
+            }
         }
     }
 }
