@@ -97,5 +97,25 @@ namespace TopNews.Core.Services
                 Payload = mappedUsers
             };
         }
+        public async Task<ServiceResponse> GetUserByIdAsync(string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id);
+            if (user == null)
+            {
+                return new ServiceResponse()
+                {
+                    Success = false,
+                    Message = "User or password incorect.",
+                };
+            }
+            var mappedUser = _mapper.Map<AppUser, UpdateUserDto>(user);
+
+            return new ServiceResponse()
+            {
+                Success = true,
+                Message = "User succesfully loaded",
+                Payload = mappedUser
+            };
+        }
     }
 }

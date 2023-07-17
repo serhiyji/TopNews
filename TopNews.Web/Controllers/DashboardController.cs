@@ -1,8 +1,10 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TopNews.Core.DTOs.User;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.User;
+using TopNews.Web.Models.ViewModels;
 
 namespace TopNews.Web.Controllers
 {
@@ -20,6 +22,8 @@ namespace TopNews.Web.Controllers
         {
             return View();
         }
+
+        #region Signin / Signup / Sign out
 
         [AllowAnonymous] // GET
         public IActionResult SignIn()
@@ -64,10 +68,42 @@ namespace TopNews.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        #endregion
+
         public async Task<IActionResult> GetAll()
         {
             var result = await _userService.GetAllAsync();
             return View(result.Payload);
         }
+
+        #region Profile page
+        public async Task<IActionResult> Profile(string Id)
+        {
+            var result = await _userService.GetUserByIdAsync(Id);
+            if (result.Success)
+            {
+                UpdateProfileVM profile = new UpdateProfileVM()
+                {
+                    UserInfo = (UpdateUserDto)(result.Payload),
+                };
+                return View(profile);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeMainInfo(UpdateUserDto _)
+        {
+
+            return RedirectToAction(nameof(Profile));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePasswordInfo(UpdatePasswordDto _)
+        {
+
+            return RedirectToAction(nameof(Profile));
+        }
+        #endregion
     }
 }

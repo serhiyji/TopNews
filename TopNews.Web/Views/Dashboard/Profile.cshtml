@@ -1,0 +1,95 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using TopNews.Core.DTOs.User;
+@using TopNews.Core.Entities.User;
+@using TopNews.Web.Models.ViewModels;
+@inject UserManager<AppUser> UserManager;
+@model UpdateProfileVM
+@{
+    var user = await UserManager.GetUserAsync(User);
+    var email = await UserManager.GetEmailAsync(user);
+}
+@*@Model.*@
+
+<!-- Main content -->
+<section class="content-wrapper">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-6">
+
+                <!-- general form elements -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Change Info</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form method="post" asp-action="ChangeMainInfo">
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">First Name</label>
+                            <input name="FirstName" type="text" class="form-control" id="InputFirstName" placeholder="Enter FirstName" value="@user.FirstName">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Last Name</label>
+                            <input name="LastName" type="text" class="form-control" id="InputLastName" placeholder="Enter LastName" value="@user.LastName">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Email</label>
+                            <input name="Email" type="email" class="form-control" id="InputEmail" placeholder="Enter Email" value="@user.Email">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Phone Number</label>
+                            <input name="PhoneNumber" type="tel" class="form-control" id="InputPhoneNumber" placeholder="Enter PhoneNumber" value="@user.PhoneNumber">
+                        </div>
+
+                    </div>
+                    <!-- /.card-body -->
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+                <!-- jquery validation -->
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Example <small>jQuery Validation</small></h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <!-- form start -->
+                    <form id="quickForm" asp-action="ChangePasswordInfo">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Old password</label>
+                                <input type="password" name="OldPassword" class="form-control" placeholder="Password">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">New password</label>
+                                <input type="password" name="NewPassword" class="form-control" placeholder="Password">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">New password</label>
+                                <input type="password" name="ConfirmPassword" class="form-control" placeholder="Password">
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+
+            </div>
+            <!--/.col (right) -->
+        </div>
+        <!-- /.row -->
+    </div><!-- /.container-fluid -->
+</section>
+<!-- /.content -->
