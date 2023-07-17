@@ -87,7 +87,7 @@ namespace TopNews.Core.Services
 
         #region Change data users
 
-        public async Task<ServiceResponse> ChangePassword(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
+        public async Task<ServiceResponse> ChangePasswordAsync(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
         {
             AppUser user = _userManager.FindByIdAsync(IdUser).Result;
             if (user == null) { return new ServiceResponse() { Success = false, Message = "Not found user", }; }
@@ -107,6 +107,26 @@ namespace TopNews.Core.Services
                 }
             }
             return new ServiceResponse(false, "The old password is incorrect");
+        }
+
+        public async Task<ServiceResponse> ChangeMainInfoUserAsync(UpdateUserDto newinfo)
+        {
+            AppUser user = await _userManager.FindByIdAsync(newinfo.Id);
+
+            if (user != null)
+            {
+                user.FirstName = newinfo.FirstName;
+                user.LastName = newinfo.LastName;
+                user.Email = newinfo.Email;
+                user.PhoneNumber = newinfo.PhoneNumber;
+
+                IdentityResult result = await _userManager.UpdateAsync(user);
+
+                return (result.Succeeded) ?
+                    new ServiceResponse(true, "Information has been changed") :
+                    new ServiceResponse(false, "Something went wrong", errors: result.Errors);
+            }
+            return new ServiceResponse(false, "Not found user");
         }
 
         #endregion

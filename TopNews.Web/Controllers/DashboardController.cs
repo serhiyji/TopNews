@@ -92,16 +92,16 @@ namespace TopNews.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangeMainInfo(UpdateUserDto _)
+        public async Task<IActionResult> ChangeMainInfo(UpdateUserDto UserInfo)
         {
-
+            ServiceResponse response = await _userService.ChangeMainInfoUserAsync(UserInfo);
             return RedirectToAction(nameof(Profile));
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangePasswordInfo(UpdatePasswordDto PassInfo)
         {
-            ServiceResponse response = await _userService.ChangePassword(PassInfo.Id, PassInfo.OldPassword, PassInfo.NewPassword, PassInfo.ConfirmPassword);
+            ServiceResponse response = await _userService.ChangePasswordAsync(PassInfo.Id, PassInfo.OldPassword, PassInfo.NewPassword, PassInfo.ConfirmPassword);
             return RedirectToAction(nameof(Profile)); 
         }
         #endregion
