@@ -117,5 +117,38 @@ namespace TopNews.Core.Services
                 Payload = mappedUser
             };
         }
+        public async Task<ServiceResponse> ChangePassword(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
+        {
+            AppUser user = _userManager.FindByIdAsync(IdUser).Result;
+            if (user == null) { return new ServiceResponse() { Success = false, Message = "Not found user", }; }
+            if (NewPassword != ConfirmPassword) { return new ServiceResponse() { Success = false, Message = "Passwords must be the same" }; }
+
+            bool IsOldPasswordValid = _userManager.CheckPasswordAsync(user, OldPassword).Result;
+            if (IsOldPasswordValid)
+            {
+                IdentityResult result = _userManager.ChangePasswordAsync(user, OldPassword, NewPassword).Result;
+                if (result.Succeeded)
+                {
+                    return new ServiceResponse()
+                    {
+                        Success = true,
+                        Message = "The password has been changed to a new one",
+                    };
+                }
+                else
+                {
+                    return new ServiceResponse()
+                    {
+                        Success = false,
+                        Message = result.Errors.First().Description,
+                    };
+                }
+            }
+            return new ServiceResponse()
+            {
+                Success = false,
+                Message = "The old password is incorrect",
+            };
+        }
     }
 }
