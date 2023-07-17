@@ -25,16 +25,14 @@ namespace TopNews.Core.Services
             _mapper = mapper;
         }
 
+        #region Signin / Signup / Sign out
+
         public async Task<ServiceResponse> LoginUserAsync(UserLoginDTO model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return new ServiceResponse()
-                {
-                    Success = false,
-                    Message = "User or password incorect.",
-                };
+                return new ServiceResponse(false, "User or password incorect.");
             }
             else
             {
@@ -42,43 +40,26 @@ namespace TopNews.Core.Services
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, model.RememberMe);
-                    return new ServiceResponse() 
-                    {
-                        Success = true,
-                        Message = "User successfully loged in."
-                    };
+                    return new ServiceResponse(true, "User successfully loged in.");
                 }
                 if (result.IsNotAllowed)
                 {
-                    return new ServiceResponse()
-                    {
-                        Success = false,
-                        Message = "Confirm your email please"
-                    };
+                    return new ServiceResponse(false, "Confirm your email please");
                 }
                 if (result.IsLockedOut)
                 {
-                    return new ServiceResponse()
-                    {
-                        Success = false,
-                        Message = "Useris locked. Connect with your site admistrator."
-                    };
+                    return new ServiceResponse(false, "Useris locked. Connect with your site admistrator.");
                 }
-                return new ServiceResponse()
-                {
-                    Success = false,
-                    Message = "User or password incorect",
-                };
+                return new ServiceResponse(false, "User or password incorect");
             }
         }
         public async Task<ServiceResponse> SignOutAsync()
         {
             await _signInManager.SignOutAsync(); 
-            return new ServiceResponse()
-            {
-                Success = true,
-            };
+            return new ServiceResponse(true);
         }
+
+        #endregion
 
         public async Task<ServiceResponse> GetAllAsync()
         {
@@ -90,33 +71,22 @@ namespace TopNews.Core.Services
                 mappedUsers[i].Role = string.Join(", ", _userManager.GetRolesAsync(users[i]).Result);
             }
 
-            return new ServiceResponse()
-            {
-                Success = true,
-                Message = "All Users loaded",
-                Payload = mappedUsers
-            };
+            return new ServiceResponse(true, "All Users loaded", mappedUsers);
         }
         public async Task<ServiceResponse> GetUserByIdAsync(string Id)
         {
             var user = await _userManager.FindByIdAsync(Id);
             if (user == null)
             {
-                return new ServiceResponse()
-                {
-                    Success = false,
-                    Message = "User or password incorect.",
-                };
+                return new ServiceResponse(false, "User or password incorect.");
             }
             var mappedUser = _mapper.Map<AppUser, UpdateUserDto>(user);
 
-            return new ServiceResponse()
-            {
-                Success = true,
-                Message = "User succesfully loaded",
-                Payload = mappedUser
-            };
+            return new ServiceResponse(true, "User succesfully loaded", mappedUser);
         }
+
+        #region Change data users
+
         public async Task<ServiceResponse> ChangePassword(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
         {
             AppUser user = _userManager.FindByIdAsync(IdUser).Result;
@@ -129,26 +99,16 @@ namespace TopNews.Core.Services
                 IdentityResult result = _userManager.ChangePasswordAsync(user, OldPassword, NewPassword).Result;
                 if (result.Succeeded)
                 {
-                    return new ServiceResponse()
-                    {
-                        Success = true,
-                        Message = "The password has been changed to a new one",
-                    };
+                    return new ServiceResponse(true, "The password has been changed to a new one");
                 }
                 else
                 {
-                    return new ServiceResponse()
-                    {
-                        Success = false,
-                        Message = result.Errors.First().Description,
-                    };
+                    return new ServiceResponse(false, result.Errors.First().Description);
                 }
             }
-            return new ServiceResponse()
-            {
-                Success = false,
-                Message = "The old password is incorrect",
-            };
+            return new ServiceResponse(false, "The old password is incorrect");
         }
+
+        #endregion
     }
 }
