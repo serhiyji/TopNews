@@ -87,26 +87,25 @@ namespace TopNews.Core.Services
 
         #region Change data users
 
-        public async Task<ServiceResponse> ChangePasswordAsync(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
+        public async Task<ServiceResponse> ChangePasswordAsync(UpdatePasswordDto model)
         {
-            AppUser user = _userManager.FindByIdAsync(IdUser).Result;
-            if (user == null) return new ServiceResponse(false, "Not found user");
-            if (NewPassword != ConfirmPassword) return new ServiceResponse(false, "Passwords must be the same");
+            AppUser user = _userManager.FindByIdAsync(model.Id).Result;
+            if (user == null) return new ServiceResponse(false, "User or password incorrect.");
 
-            bool IsOldPasswordValid = _userManager.CheckPasswordAsync(user, OldPassword).Result;
-            if (IsOldPasswordValid)
+            IdentityResult result = _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword).Result;
+            if (result.Succeeded)
             {
-                IdentityResult result = _userManager.ChangePasswordAsync(user, OldPassword, NewPassword).Result;
-                if (result.Succeeded)
-                {
-                    return new ServiceResponse(true, "The password has been changed to a new one");
-                }
-                else
-                {
-                    return new ServiceResponse(false, result.Errors.First().Description);
-                }
+                await _signInManager.SignOutAsync();
+                return new ServiceResponse(true, "Password successfully updated");
             }
-            return new ServiceResponse(false, "The old password is incorrect");
+            List<IdentityError> errorList = result.Errors.ToList();
+            string errors = "";
+
+            foreach (var error in errorList)
+            {
+                errors = errors + error.Description.ToList();
+            }
+            return new ServiceResponse(false, "Error.", payload: errors);
         }
 
         public async Task<ServiceResponse> ChangeMainInfoUserAsync(UpdateUserDto newinfo)

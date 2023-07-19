@@ -92,6 +92,7 @@ namespace TopNews.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeMainInfo(UpdateUserDto UserInfo)
         {
             ServiceResponse response = await _userService.ChangeMainInfoUserAsync(UserInfo);
@@ -99,10 +100,24 @@ namespace TopNews.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ChangePasswordInfo(UpdatePasswordDto PassInfo)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(UpdatePasswordDto PassInfo)
         {
-            ServiceResponse response = await _userService.ChangePasswordAsync(PassInfo.Id, PassInfo.OldPassword, PassInfo.NewPassword, PassInfo.ConfirmPassword);
-            return RedirectToAction(nameof(Profile)); 
+            var validator = new UpdatePasswordValidation();
+            var validationResult = await validator.ValidateAsync(PassInfo);
+            if (validationResult.IsValid)
+            {
+                var result  = await _userService.ChangePasswordAsync(PassInfo);
+                if (result.Success)
+                {
+                    return RedirectToAction(nameof(SignIn));
+                }
+                ViewBag.UpdatePasswordError = result.Payload;
+                return View();
+            }
+
+            ViewBag.UpdatePasswordError = validationResult.Errors[0];
+            return View();
         }
         #endregion
     }

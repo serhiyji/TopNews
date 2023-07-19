@@ -5,6 +5,6 @@ namespace TopNews.Web.Models.ViewModels
     public class UpdateProfileVM
     {
         public UpdateUserDto UserInfo { get; set; }
-        public UpdatePasswordDto UserPassword { get; set; }
+        public UpdatePasswordDto UpdatePassword { get; set; }
     }
 }
