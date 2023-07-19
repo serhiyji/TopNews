@@ -90,8 +90,8 @@ namespace TopNews.Core.Services
         public async Task<ServiceResponse> ChangePasswordAsync(string IdUser, string OldPassword, string NewPassword, string ConfirmPassword)
         {
             AppUser user = _userManager.FindByIdAsync(IdUser).Result;
-            if (user == null) { return new ServiceResponse() { Success = false, Message = "Not found user", }; }
-            if (NewPassword != ConfirmPassword) { return new ServiceResponse() { Success = false, Message = "Passwords must be the same" }; }
+            if (user == null) return new ServiceResponse(false, "Not found user");
+            if (NewPassword != ConfirmPassword) return new ServiceResponse(false, "Passwords must be the same");
 
             bool IsOldPasswordValid = _userManager.CheckPasswordAsync(user, OldPassword).Result;
             if (IsOldPasswordValid)
