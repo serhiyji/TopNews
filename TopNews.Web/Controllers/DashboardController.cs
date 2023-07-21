@@ -160,6 +160,17 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
+        public async Task<IActionResult> Delete(string Id)
+        {
+            ServiceResponse response = await _userService.DeleteUserAsync(Id);
+            if (response.Success)
+            {
+                return RedirectToAction(nameof(GetAll));
+            }
+            ViewBag.CreateUserError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
+            return View();
+        }
+
         #endregion
     }
 }
