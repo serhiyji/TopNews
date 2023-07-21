@@ -101,13 +101,13 @@ namespace TopNews.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(UpdatePasswordDto PassInfo)
+        public async Task<IActionResult> Profile(UpdatePasswordDto model)
         {
             var validator = new UpdatePasswordValidation();
-            var validationResult = await validator.ValidateAsync(PassInfo);
+            var validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                var result  = await _userService.ChangePasswordAsync(PassInfo);
+                var result  = await _userService.ChangePasswordAsync(model);
                 if (result.Success)
                 {
                     return RedirectToAction(nameof(SignIn));
@@ -117,6 +117,14 @@ namespace TopNews.Web.Controllers
             }
 
             ViewBag.UpdatePasswordError = validationResult.Errors[0];
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(UpdateUserDto model)
+        {
+
             return View();
         }
         #endregion
