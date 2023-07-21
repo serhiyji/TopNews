@@ -160,14 +160,21 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Delete(string Id)
+        public async Task<IActionResult> Delete()
         {
-            ServiceResponse response = await _userService.DeleteUserAsync(Id);
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(EditUserDto model)
+        {
+            ServiceResponse response = await _userService.DeleteUserAsync(model);
             if (response.Success)
             {
                 return RedirectToAction(nameof(GetAll));
             }
-            ViewBag.CreateUserError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
+            ViewBag.AuthError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
             return View();
         }
 

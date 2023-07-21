@@ -39,8 +39,8 @@
                                 {
                                     <span class="text-danger">@ViewBag.AuthError</span>
                                 }
-                                <h5 class="mb-4">Do you really wants to delete user @Model.Email?</h5>
-                                <a asp-action="DeleteById" asp-route-id="@Model.Id" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
+                                <h5 class="mb-4">Do you really wants to delete user</h5>
+                                <a asp-action="Delete" asp-route-id="@Model" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
                             </div>
                         </div>
                         <!-- /.card-body -->

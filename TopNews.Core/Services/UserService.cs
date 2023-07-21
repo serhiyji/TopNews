@@ -55,7 +55,7 @@ namespace TopNews.Core.Services
         }
         public async Task<ServiceResponse> SignOutAsync()
         {
-            await _signInManager.SignOutAsync(); 
+            await _signInManager.SignOutAsync();
             return new ServiceResponse(true);
         }
 
@@ -65,7 +65,7 @@ namespace TopNews.Core.Services
         {
             List<AppUser> users = await _userManager.Users.ToListAsync();
             List<UsersDto> mappedUsers = users.Select(u => _mapper.Map<AppUser, UsersDto>(u)).ToList();
-            
+
             for (int i = 0; i < mappedUsers.Count; i++)
             {
                 mappedUsers[i].Role = string.Join(", ", _userManager.GetRolesAsync(users[i]).Result);
@@ -131,6 +131,14 @@ namespace TopNews.Core.Services
         #endregion
 
         #region Create, Delete, Edit user
+
+        public async Task<ServiceResponse> GetEmailById(string Id)
+        {
+            AppUser user = await _userManager.FindByIdAsync(Id);
+            return (user != null) ?
+                new ServiceResponse(true, "", payload: user.Email) :
+                new ServiceResponse(false);
+        }
 
         public async Task<ServiceResponse> CreateUserAsync(CreateUserDto model)
         {
