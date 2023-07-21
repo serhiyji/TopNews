@@ -129,5 +129,24 @@ namespace TopNews.Core.Services
         }
 
         #endregion
+
+        #region Create, Delete, Edit user
+
+        public async Task<ServiceResponse> CreateUserAsync(CreateUserDto model)
+        {
+            AppUser NewUser = _mapper.Map<CreateUserDto, AppUser>(model);
+            IdentityResult result = await _userManager.CreateAsync(NewUser);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(NewUser, model.Role);
+                return new ServiceResponse(true, "User has been added");
+            }
+            else
+            {
+                return new ServiceResponse(false, "something went wrong", errors: result.Errors);
+            }
+        }
+
+        #endregion
     }
 }

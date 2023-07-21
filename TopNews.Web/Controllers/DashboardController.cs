@@ -1,5 +1,6 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Services;
@@ -127,6 +128,38 @@ namespace TopNews.Web.Controllers
 
             return View();
         }
+        #endregion
+
+        #region Users create, delete, edit
+
+        public async Task<IActionResult> Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateUserDto model)
+        {
+            var validaor = new CreateUserValidation();
+            var validationResult = await validaor.ValidateAsync(model);
+            if (validationResult.IsValid)
+            {
+                ServiceResponse response = await _userService.CreateUserAsync(model);
+                if (response.Success)
+                {
+                    return RedirectToAction(nameof(GetAll));
+                }
+                else
+                {
+                    ViewBag.CreateUserError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
+                    return View();
+                }
+            }
+            ViewBag.CreateUserError = validationResult.Errors[0];
+            return View();
+        }
+
         #endregion
     }
 }
