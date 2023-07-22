@@ -80,7 +80,7 @@ namespace TopNews.Core.Services
             {
                 return new ServiceResponse(false, "User or password incorect.");
             }
-            var mappedUser = _mapper.Map<AppUser, UpdateUserDto>(user);
+            var mappedUser = _mapper.Map<AppUser, DeleteUserDto>(user);
 
             return new ServiceResponse(true, "User succesfully loaded", payload: mappedUser);
         }
@@ -155,9 +155,9 @@ namespace TopNews.Core.Services
             }
         }
 
-        public async Task<ServiceResponse> DeleteUserAsync(string Id)
+        public async Task<ServiceResponse> DeleteUserAsync(DeleteUserDto model)
         {
-            AppUser userdelete = await _userManager.FindByIdAsync(Id);
+            AppUser userdelete = await _userManager.FindByIdAsync(model.Id);
             if (userdelete != null)
             {
                 IdentityResult result = await _userManager.DeleteAsync(userdelete);

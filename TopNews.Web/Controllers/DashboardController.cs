@@ -152,7 +152,7 @@ namespace TopNews.Web.Controllers
                 }
                 else
                 {
-                    ViewBag.CreateUserError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
+                    ViewBag.CreateUserError = response.Errors.Any() ? ((IdentityError)response.Errors.First()).Description : response.Message;
                     return View();
                 }
             }
@@ -160,22 +160,23 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Delete()
+        public async Task<IActionResult> Delete(string id)
         {
-            return View();
+            var result = await _userService.GetUserByIdAsync(id);
+            return View(result.Payload);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(EditUserDto model)
+        public async Task<IActionResult> Delete(DeleteUserDto model)
         {
-            ServiceResponse response = await _userService.DeleteUserAsync(model);
-            if (response.Success)
+            var result = await _userService.DeleteUserAsync(model);
+            if (result.Success)
             {
                 return RedirectToAction(nameof(GetAll));
             }
-            ViewBag.AuthError = response.Errors.Count() > 0 ? ((IdentityError)response.Errors.First()).Description : response.Message;
-            return View();
+            ViewBag.GetAllError = result.Errors.Any() ? ((IdentityError)result.Errors.First()).Description : result.Message;
+            return RedirectToAction(nameof(GetAll));
         }
 
         #endregion

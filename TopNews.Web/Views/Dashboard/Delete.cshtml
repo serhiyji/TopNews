@@ -1,5 +1,5 @@
 ﻿@using TopNews.Core.DTOs.User;
-@model EditUserDto
+@model DeleteUserDto;
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -35,12 +35,17 @@
                         <!-- /.card-header -->
                         <div class="card-body">
                             <div class="callout callout-danger">
-                                @if (@ViewBag.AuthError != null)
+                                @if (@ViewBag.DeleteUserError != null)
                                 {
-                                    <span class="text-danger">@ViewBag.AuthError</span>
+                                    <span class="text-danger">@ViewBag.DeleteUserError</span>
                                 }
-                                <h5 class="mb-4">Do you really wants to delete user</h5>
-                                <a asp-action="Delete" asp-route-id="@Model" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
+                                <h5 class="mb-4">Do you really wants to delete user @Model.Email?</h5>
+                                <form method="post" asp-action="Delete">
+                                    <div class="card-footer">
+                                        <button type="submit" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</button>
+                                    </div>
+                                </form>
+                                
                             </div>
                         </div>
                         <!-- /.card-body -->
