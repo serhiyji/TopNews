@@ -94,10 +94,22 @@ namespace TopNews.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangeMainInfo(UpdateUserDto UserInfo)
+        public async Task<IActionResult> ChangeMainInfo(UpdateUserDto model)
         {
-            ServiceResponse<object, IdentityError> result = await _userService.ChangeMainInfoUserAsync(UserInfo);
-            return RedirectToAction(nameof(Profile));
+            var validator = new UpdateUserValidation();
+            var validationResult = await validator.ValidateAsync(model);
+            if (validationResult.IsValid)
+            {
+                ServiceResponse<object, IdentityError> result = await _userService.ChangeMainInfoUserAsync(model);
+                if (result.Success)
+                {
+                    return View("Profile", new UpdateProfileVM() { UserInfo = model });
+                }
+                ViewBag.UserUpdateError = result.GetFirstError;
+                return View("Profile", new UpdateProfileVM() { UserInfo = model });
+            }
+            ViewBag.UserUpdateError = validationResult.Errors[0];
+            return View("Profile", new UpdateProfileVM() { UserInfo = model });
         }
 
         [HttpPost]
@@ -114,20 +126,12 @@ namespace TopNews.Web.Controllers
                     return RedirectToAction(nameof(SignIn));
                 }
                 ViewBag.UpdatePasswordError = result.Errors;
-                return View();
+                return View(new UpdateProfileVM() { UserInfo = _userService.GetUpdateUserDtoByIdAsync(model.Id).Result.Payload });
             }
-
             ViewBag.UpdatePasswordError = validationResult.Errors[0];
-            return View();
+            return View(new UpdateProfileVM() { UserInfo = _userService.GetUpdateUserDtoByIdAsync(model.Id).Result.Payload });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(UpdateUserDto model)
-        {
-
-            return View();
-        }
         #endregion
 
         #region Users create, delete, edit
