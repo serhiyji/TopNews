@@ -8,45 +8,23 @@ namespace TopNews.Core.Services
 {
     public class ServiceResponse<PayloadType, ErrorType>
     {
-        public ServiceResponse() { }
-
-        public ServiceResponse(bool success)
+        public ServiceResponse(bool success = false, string message = "", PayloadType payload = default, IEnumerable<ErrorType> errors = default)
         {
             this.Success = success;
-        }
-        public ServiceResponse(bool success, string message) : this(success)
-        {
             this.Message = message;
-        }
-        public ServiceResponse(bool success, string message, PayloadType payload) : this(success, message)
-        {
             this.Payload = payload;
-        }
-        public ServiceResponse(bool success, string message, IEnumerable<ErrorType> errors) : this(success, message)
-        {
-            this.Errors = errors;
-        }
-        public ServiceResponse(bool success, string message, PayloadType payload, IEnumerable<ErrorType> errors) : this(success, message, payload)
-        {
-            this.Errors = errors;
+            this.Errors = errors ?? Enumerable.Empty<ErrorType>();
         }
         public bool Success { get; set; } = false;
         public string Message { get; set; } = string.Empty;
         public PayloadType Payload { get; set; } = default;
         public IEnumerable<ErrorType> Errors { get; set; } = Enumerable.Empty<ErrorType>();
+        public bool IsErrorsEmpty => Errors != null && Errors.Any();
+        public ErrorType? GetFirstError => IsErrorsEmpty ? default : Errors.First();
     }
     public class ServiceResponse : ServiceResponse<object, object>
     {
-        public ServiceResponse() { }
-
-        public ServiceResponse(bool success) : base(success) { }
-
-        public ServiceResponse(bool success, string message) : base(success, message) { }
-
-        public ServiceResponse(bool success, string message, object payload) : base(success, message, payload) { }
-
-        public ServiceResponse(bool success, string message, IEnumerable<object> errors) : base(success, message, errors) { }
-
-        public ServiceResponse(bool success, string message, object payload, IEnumerable<object> errors) : base(success, message, payload, errors) { }
+        public ServiceResponse(bool success = false, string message = "", object payload = default, IEnumerable<object> errors = default)
+            : base(success, message, payload, errors) { }
     }
 }

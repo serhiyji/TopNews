@@ -40,7 +40,7 @@ namespace TopNews.Web.Controllers
         [AllowAnonymous] // HOST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SignIn(TopNews.Core.DTOs.User.UserLoginDTO model)
+        public async Task<IActionResult> SignIn(UserLoginDTO model)
         {
             LoginUserValidation validator = new LoginUserValidation();
             ValidationResult valationReslt = validator.Validate(model);
@@ -152,7 +152,7 @@ namespace TopNews.Web.Controllers
                 }
                 else
                 {
-                    ViewBag.CreateUserError = response.Errors.Any() ? response.Errors.First().Description : response.Message;
+                    ViewBag.CreateUserError = response.GetFirstError;
                     return View();
                 }
             }
@@ -175,7 +175,7 @@ namespace TopNews.Web.Controllers
             {
                 return RedirectToAction(nameof(GetAll));
             }
-            ViewBag.GetAllError = result.Errors.Any() ? result.Errors.First().Description : result.Message;
+            ViewBag.GetAllError = result.GetFirstError;
             return RedirectToAction(nameof(GetAll));
         }
 
