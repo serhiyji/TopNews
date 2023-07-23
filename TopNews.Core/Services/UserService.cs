@@ -61,6 +61,20 @@ namespace TopNews.Core.Services
 
         #endregion
 
+        #region Get users mapped
+
+        private async Task<(bool Success, AppUser user)> GetAppUserByIdAsyck(string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id);
+            return user == null ? (false, null) : (true, user);
+        }
+        private async Task<ServiceResponse> GetMappedUserById<Mapped>(string Id)
+        {
+            var result = await this.GetAppUserByIdAsyck(Id);
+            return (result.Success) ?
+                new ServiceResponse(true, "User succesfully loaded", payload: _mapper.Map<AppUser, Mapped>(result.user)) :
+                new ServiceResponse(false, "User not found");
+        }
         public async Task<ServiceResponse> GetAllAsync()
         {
             List<AppUser> users = await _userManager.Users.ToListAsync();
@@ -73,17 +87,10 @@ namespace TopNews.Core.Services
 
             return new ServiceResponse(true, "All Users loaded", payload: mappedUsers);
         }
-        public async Task<ServiceResponse> GetUserByIdAsync(string Id)
-        {
-            var user = await _userManager.FindByIdAsync(Id);
-            if (user == null)
-            {
-                return new ServiceResponse(false, "User or password incorect.");
-            }
-            var mappedUser = _mapper.Map<AppUser, DeleteUserDto>(user);
+        public async Task<ServiceResponse> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserById<UpdateUserDto>(Id).Result;
+        public async Task<ServiceResponse> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserById<DeleteUserDto>(Id).Result;
 
-            return new ServiceResponse(true, "User succesfully loaded", payload: mappedUser);
-        }
+        #endregion
 
         #region Change data users
 

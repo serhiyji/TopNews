@@ -80,7 +80,7 @@ namespace TopNews.Web.Controllers
         #region Profile page
         public async Task<IActionResult> Profile(string Id)
         {
-            var result = await _userService.GetUserByIdAsync(Id);
+            var result = await _userService.GetUpdateUserDtoByIdAsync(Id);
             if (result.Success)
             {
                 UpdateProfileVM profile = new UpdateProfileVM()
@@ -162,7 +162,7 @@ namespace TopNews.Web.Controllers
 
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _userService.GetUserByIdAsync(id);
+            var result = await _userService.GetDeleteUserDtoByIdAsync(id);
             return View(result.Payload);
         }
 
