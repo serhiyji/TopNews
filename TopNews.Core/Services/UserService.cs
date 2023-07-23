@@ -68,14 +68,14 @@ namespace TopNews.Core.Services
             var user = await _userManager.FindByIdAsync(Id);
             return user == null ? (false, null) : (true, user);
         }
-        private async Task<ServiceResponse> GetMappedUserById<Mapped>(string Id)
+        private async Task<ServiceResponse<Mapped, object>> GetMappedUserById<Mapped>(string Id)
         {
             var result = await this.GetAppUserByIdAsyck(Id);
             return (result.Success) ?
-                new ServiceResponse(true, "User succesfully loaded", payload: _mapper.Map<AppUser, Mapped>(result.user)) :
-                new ServiceResponse(false, "User not found");
+                new ServiceResponse<Mapped, object>(true, "User succesfully loaded", payload: _mapper.Map<AppUser, Mapped>(result.user)) :
+                new ServiceResponse<Mapped, object>(false, "User not found");
         }
-        public async Task<ServiceResponse> GetAllAsync()
+        public async Task<ServiceResponse<List<UsersDto>, object>> GetAllAsync()
         {
             List<AppUser> users = await _userManager.Users.ToListAsync();
             List<UsersDto> mappedUsers = users.Select(u => _mapper.Map<AppUser, UsersDto>(u)).ToList();
@@ -85,37 +85,30 @@ namespace TopNews.Core.Services
                 mappedUsers[i].Role = string.Join(", ", _userManager.GetRolesAsync(users[i]).Result);
             }
 
-            return new ServiceResponse(true, "All Users loaded", payload: mappedUsers);
+            return new ServiceResponse<List<UsersDto>, object>(true, "All Users loaded", payload: mappedUsers);
         }
-        public async Task<ServiceResponse> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserById<UpdateUserDto>(Id).Result;
-        public async Task<ServiceResponse> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserById<DeleteUserDto>(Id).Result;
+        public async Task<ServiceResponse<UpdateUserDto, object>> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserById<UpdateUserDto>(Id).Result;
+        public async Task<ServiceResponse<DeleteUserDto, object>> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserById<DeleteUserDto>(Id).Result;
 
         #endregion
 
         #region Change data users
 
-        public async Task<ServiceResponse> ChangePasswordAsync(UpdatePasswordDto model)
+        public async Task<ServiceResponse<object, string>> ChangePasswordAsync(UpdatePasswordDto model)
         {
             AppUser user = _userManager.FindByIdAsync(model.Id).Result;
-            if (user == null) return new ServiceResponse(false, "User or password incorrect.");
+            if (user == null) return new ServiceResponse<object, string>(false, "User or password incorrect.");
 
             IdentityResult result = _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword).Result;
             if (result.Succeeded)
             {
                 await _signInManager.SignOutAsync();
-                return new ServiceResponse(true, "Password successfully updated");
+                return new ServiceResponse<object, string>(true, "Password successfully updated");
             }
-            List<IdentityError> errorList = result.Errors.ToList();
-            string errors = "";
-
-            foreach (var error in errorList)
-            {
-                errors = errors + error.Description.ToList();
-            }
-            return new ServiceResponse(false, "Error.", payload: errors);
+            return new ServiceResponse<object, string>(false, "Error.", errors: result.Errors.ToList().Select(i => i.Description));
         }
 
-        public async Task<ServiceResponse> ChangeMainInfoUserAsync(UpdateUserDto newinfo)
+        public async Task<ServiceResponse<object, IdentityError>> ChangeMainInfoUserAsync(UpdateUserDto newinfo)
         {
             AppUser user = await _userManager.FindByIdAsync(newinfo.Id);
 
@@ -129,40 +122,40 @@ namespace TopNews.Core.Services
                 IdentityResult result = await _userManager.UpdateAsync(user);
 
                 return (result.Succeeded) ?
-                    new ServiceResponse(true, "Information has been changed") :
-                    new ServiceResponse(false, "Something went wrong", errors: result.Errors);
+                    new ServiceResponse<object, IdentityError>(true, "Information has been changed") :
+                    new ServiceResponse<object, IdentityError>(false, "Something went wrong", errors: result.Errors);
             }
-            return new ServiceResponse(false, "Not found user");
+            return new ServiceResponse<object, IdentityError>(false, "Not found user");
         }
 
         #endregion
 
         #region Create, Delete, Edit user
 
-        public async Task<ServiceResponse> GetEmailById(string Id)
+        public async Task<ServiceResponse<string, object>> GetEmailById(string Id)
         {
             AppUser user = await _userManager.FindByIdAsync(Id);
             return (user != null) ?
-                new ServiceResponse(true, "", payload: user.Email) :
-                new ServiceResponse(false);
+                new ServiceResponse<string, object>(true, "", payload: user.Email) :
+                new ServiceResponse<string, object>(false);
         }
 
-        public async Task<ServiceResponse> CreateUserAsync(CreateUserDto model)
+        public async Task<ServiceResponse<object, IdentityError>> CreateUserAsync(CreateUserDto model)
         {
             AppUser NewUser = _mapper.Map<CreateUserDto, AppUser>(model);
             IdentityResult result = await _userManager.CreateAsync(NewUser);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(NewUser, model.Role);
-                return new ServiceResponse(true, "User has been added");
+                return new ServiceResponse<object, IdentityError>(true, "User has been added");
             }
             else
             {
-                return new ServiceResponse(false, "something went wrong", errors: result.Errors);
+                return new ServiceResponse<object, IdentityError>(false, "Something went wrong", errors: result.Errors);
             }
         }
 
-        public async Task<ServiceResponse> DeleteUserAsync(DeleteUserDto model)
+        public async Task<ServiceResponse<object, IdentityError>> DeleteUserAsync(DeleteUserDto model)
         {
             AppUser userdelete = await _userManager.FindByIdAsync(model.Id);
             if (userdelete != null)
@@ -170,14 +163,14 @@ namespace TopNews.Core.Services
                 IdentityResult result = await _userManager.DeleteAsync(userdelete);
                 if (result.Succeeded)
                 {
-                    return new ServiceResponse(true);
+                    return new ServiceResponse<object, IdentityError>(true);
                 }
                 else
                 {
-                    return new ServiceResponse(false, "something went wrong", errors: result.Errors);
+                    return new ServiceResponse<object, IdentityError>(false, "something went wrong", errors: result.Errors);
                 }
             }
-            return new ServiceResponse(false, "User a was found");
+            return new ServiceResponse<object, IdentityError>(false, "User a was found");
         }
 
         #endregion

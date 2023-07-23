@@ -73,19 +73,19 @@ namespace TopNews.Web.Controllers
 
         public async Task<IActionResult> GetAll()
         {
-            var result = await _userService.GetAllAsync();
+            ServiceResponse<List<UsersDto>, object> result = await _userService.GetAllAsync();
             return View(result.Payload);
         }
 
         #region Profile page
         public async Task<IActionResult> Profile(string Id)
         {
-            var result = await _userService.GetUpdateUserDtoByIdAsync(Id);
+            ServiceResponse<UpdateUserDto, object> result = await _userService.GetUpdateUserDtoByIdAsync(Id);
             if (result.Success)
             {
                 UpdateProfileVM profile = new UpdateProfileVM()
                 {
-                    UserInfo = (UpdateUserDto)(result.Payload),
+                    UserInfo = result.Payload,
                 };
                 return View(profile);
             }
@@ -96,7 +96,7 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeMainInfo(UpdateUserDto UserInfo)
         {
-            ServiceResponse response = await _userService.ChangeMainInfoUserAsync(UserInfo);
+            ServiceResponse<object, IdentityError> result = await _userService.ChangeMainInfoUserAsync(UserInfo);
             return RedirectToAction(nameof(Profile));
         }
 
@@ -108,12 +108,12 @@ namespace TopNews.Web.Controllers
             var validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                var result  = await _userService.ChangePasswordAsync(model);
+                ServiceResponse<object, string> result = await _userService.ChangePasswordAsync(model);
                 if (result.Success)
                 {
                     return RedirectToAction(nameof(SignIn));
                 }
-                ViewBag.UpdatePasswordError = result.Payload;
+                ViewBag.UpdatePasswordError = result.Errors;
                 return View();
             }
 
@@ -145,14 +145,14 @@ namespace TopNews.Web.Controllers
             var validationResult = await validaor.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                ServiceResponse response = await _userService.CreateUserAsync(model);
+                ServiceResponse<object, IdentityError> response = await _userService.CreateUserAsync(model);
                 if (response.Success)
                 {
                     return RedirectToAction(nameof(GetAll));
                 }
                 else
                 {
-                    ViewBag.CreateUserError = response.Errors.Any() ? ((IdentityError)response.Errors.First()).Description : response.Message;
+                    ViewBag.CreateUserError = response.Errors.Any() ? response.Errors.First().Description : response.Message;
                     return View();
                 }
             }
@@ -162,7 +162,7 @@ namespace TopNews.Web.Controllers
 
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _userService.GetDeleteUserDtoByIdAsync(id);
+            ServiceResponse<DeleteUserDto, object> result = await _userService.GetDeleteUserDtoByIdAsync(id);
             return View(result.Payload);
         }
 
@@ -170,12 +170,12 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(DeleteUserDto model)
         {
-            var result = await _userService.DeleteUserAsync(model);
+            ServiceResponse<object, IdentityError> result = await _userService.DeleteUserAsync(model);
             if (result.Success)
             {
                 return RedirectToAction(nameof(GetAll));
             }
-            ViewBag.GetAllError = result.Errors.Any() ? ((IdentityError)result.Errors.First()).Description : result.Message;
+            ViewBag.GetAllError = result.Errors.Any() ? result.Errors.First().Description : result.Message;
             return RedirectToAction(nameof(GetAll));
         }
 
