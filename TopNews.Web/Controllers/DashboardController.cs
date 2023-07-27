@@ -40,7 +40,7 @@ namespace TopNews.Web.Controllers
         [AllowAnonymous] // HOST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SignIn(UserLoginDTO model)
+        public async Task<IActionResult> SignIn(UserLoginDto model)
         {
             LoginUserValidation validator = new LoginUserValidation();
             ValidationResult valationReslt = validator.Validate(model);

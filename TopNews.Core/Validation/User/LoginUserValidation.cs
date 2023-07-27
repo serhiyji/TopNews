@@ -8,7 +8,7 @@ using TopNews.Core.DTOs.User;
 
 namespace TopNews.Core.Validation.User
 {
-    public class LoginUserValidation : AbstractValidator<UserLoginDTO>
+    public class LoginUserValidation : AbstractValidator<UserLoginDto>
     {
         public LoginUserValidation()
         {

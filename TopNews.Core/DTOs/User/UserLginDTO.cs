@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TopNews.Core.DTOs.User
 {
-    public class UserLoginDTO
+    public class UserLoginDto
     {
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;

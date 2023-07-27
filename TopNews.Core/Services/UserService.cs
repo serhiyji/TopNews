@@ -27,7 +27,7 @@ namespace TopNews.Core.Services
 
         #region Signin / Signup / Sign out
 
-        public async Task<ServiceResponse> LoginUserAsync(UserLoginDTO model)
+        public async Task<ServiceResponse> LoginUserAsync(UserLoginDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
