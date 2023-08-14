@@ -18,14 +18,14 @@ namespace TopNews.Core.Services
         }
 
 
-        public async Task SendEmail(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            string password = _configuration["EmailSetting:Password"];
-            string SMTP = _configuration["EmailSetting:SMTP"];
-            string fromEmail = _configuration["EmailSetting:User"];
-            int port = Int32.Parse(_configuration["EmailSetting:PORT"]);
+            string password = _configuration["EmailSettings:Password"];
+            string SMTP = _configuration["EmailSettings:SMTP"];
+            string fromEmail = _configuration["EmailSettings:User"];
+            int port = Int32.Parse(_configuration["EmailSettings:PORT"]);
 
-            MimeMessage email = new MimeMessage();
+            var email = new MimeMessage();
             email.From.Add(MailboxAddress.Parse(fromEmail));
             email.To.Add(MailboxAddress.Parse(toEmail));
             email.Subject = subject;
@@ -34,10 +34,10 @@ namespace TopNews.Core.Services
             bodyBuilder.HtmlBody = body;
             email.Body = bodyBuilder.ToMessageBody();
 
-            using(SmtpClient smtp = new SmtpClient())
+            using (var smtp = new SmtpClient())
             {
                 smtp.Connect(SMTP, port, MailKit.Security.SecureSocketOptions.SslOnConnect);
-                smtp.Authenticate(fromEmail, toEmail);
+                smtp.Authenticate(fromEmail, password);
                 await smtp.SendAsync(email);
                 smtp.Disconnect(true);
             }

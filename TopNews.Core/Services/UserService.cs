@@ -17,12 +17,14 @@ namespace TopNews.Core.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IMapper _mapper;
+        private readonly EmailService _emailService;
 
-        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMapper mapper)
+        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMapper mapper, EmailService emailService)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         #region Signin / Signup / Sign out
@@ -147,6 +149,7 @@ namespace TopNews.Core.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(NewUser, model.Role);
+                _emailService.SendEmailAsync(model.Email, "TopNews", "Hello word");
                 return new ServiceResponse<object, IdentityError>(true, "User has been added");
             }
             else
