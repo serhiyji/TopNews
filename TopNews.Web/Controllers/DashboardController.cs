@@ -184,5 +184,16 @@ namespace TopNews.Web.Controllers
         }
 
         #endregion
+
+        public async Task<IActionResult> ConfirmEmail(string userid, string token)
+        {
+            var result = await _userService.ConfirmEmailAsync(userid, token);
+            if (result.Success)
+            {
+                return Redirect(nameof(SignIn));
+            }
+            return Redirect(nameof(SignIn));
+        }
+
     }
 }

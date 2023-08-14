@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,15 +18,17 @@ namespace TopNews.Core.Services
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IMapper _mapper;
         private readonly EmailService _emailService;
+        private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
 
-        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IMapper mapper, EmailService emailService)
+        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, EmailService emailService, IMapper mapper, IConfiguration configuration)
         {
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _mapper = mapper;
-            _emailService = emailService;
+            this._signInManager = signInManager;
+            this._userManager = userManager;
+            this._emailService = emailService;
+            this._mapper = mapper;
+            this._configuration = configuration;
         }
 
         #region Signin / Signup / Sign out
@@ -149,7 +153,7 @@ namespace TopNews.Core.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(NewUser, model.Role);
-                _emailService.SendEmailAsync(model.Email, "TopNews", "Hello word");
+                await SendConfirmationEmailAsync(NewUser);
                 return new ServiceResponse<object, IdentityError>(true, "User has been added");
             }
             else
@@ -176,6 +180,39 @@ namespace TopNews.Core.Services
             return new ServiceResponse<object, IdentityError>(false, "User a was found");
         }
 
+        #endregion
+
+        #region Email
+        public async Task SendConfirmationEmailAsync(AppUser user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = Encoding.UTF8.GetBytes(token);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/confirmemail?userid={user.Id}&token={validEmailToken}";
+
+            string emailBody = $"<h1>Confirm your email</h1> <a href='{url}'>Confirm now!</a>";
+            await _emailService.SendEmailAsync(user.Email, "Email confirmation.", emailBody);
+        }
+
+        public async Task<ServiceResponse> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ServiceResponse(false, "User not found");
+            }
+
+            var decodedToken = WebEncoders.Base64UrlDecode(token);
+            string narmalToken = Encoding.UTF8.GetString(decodedToken);
+
+            var result = await _userManager.ConfirmEmailAsync(user, narmalToken);
+            if (result.Succeeded)
+            {
+                return new ServiceResponse(true, "Email successfully confirmed.");
+            }
+            return new ServiceResponse(false, "Email not confirmed", errors: result.Errors.Select(e => e.Description));
+        }
         #endregion
     }
 }
