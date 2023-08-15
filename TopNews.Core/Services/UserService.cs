@@ -149,7 +149,7 @@ namespace TopNews.Core.Services
         public async Task<ServiceResponse<object, IdentityError>> CreateUserAsync(CreateUserDto model)
         {
             AppUser NewUser = _mapper.Map<CreateUserDto, AppUser>(model);
-            IdentityResult result = await _userManager.CreateAsync(NewUser);
+            IdentityResult result = await _userManager.CreateAsync(NewUser, model.Password);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(NewUser, model.Role);
