@@ -71,11 +71,13 @@ namespace TopNews.Web.Controllers
 
         #endregion
 
+        #region Get all users page
         public async Task<IActionResult> GetAll()
         {
             ServiceResponse<List<UsersDto>, object> result = await _userService.GetAllAsync();
             return View(result.Payload);
         }
+        #endregion
 
         #region Profile page
         public async Task<IActionResult> Profile(string Id)
@@ -134,8 +136,7 @@ namespace TopNews.Web.Controllers
 
         #endregion
 
-        #region Users create, delete, edit
-
+        #region Create user page
         public async Task<IActionResult> Create()
         {
             return View();
@@ -164,6 +165,19 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userid, string token)
+        {
+            var result = await _userService.ConfirmEmailAsync(userid, token);
+            if (result.Success)
+            {
+                return Redirect(nameof(SignIn));
+            }
+            return Redirect(nameof(SignIn));
+        }
+        #endregion
+
+        #region Delete user page
         public async Task<IActionResult> Delete(string id)
         {
             ServiceResponse<DeleteUserDto, object> result = await _userService.GetDeleteUserDtoByIdAsync(id);
@@ -182,18 +196,54 @@ namespace TopNews.Web.Controllers
             ViewBag.GetAllError = result.GetFirstError;
             return RedirectToAction(nameof(GetAll));
         }
-
         #endregion
 
-        public async Task<IActionResult> ConfirmEmail(string userid, string token)
+        #region Forgot password page
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword()
         {
-            var result = await _userService.ConfirmEmailAsync(userid, token);
-            if (result.Success)
-            {
-                return Redirect(nameof(SignIn));
-            }
-            return Redirect(nameof(SignIn));
+            return View();
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var result = await _userService.ForgotPasswordAsync(email);
+            if (result.Success)
+            {
+                ViewBag.AuthError = "Check your email.";
+                return View(nameof(SignIn));
+            }
+            ViewBag.AuthError = "Something went wrong.";
+            return View();
+        }
+        #endregion
+
+        #region Reset password page
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(string email, string token)
+        {
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(PasswordRecoveryDto model)
+        {
+            var result = await _userService.VerifyNewPassword(model);
+            if (result.Success)
+            {
+                return View(nameof(SignIn));
+            }
+            ViewBag.Email = model.Email;
+            ViewBag.Token = model.Token;
+            ViewBag.AuthError = result.IsErrorsEmpty ? result.Message : result.GetFirstError;
+            return View();
+        }
+        #endregion
     }
 }

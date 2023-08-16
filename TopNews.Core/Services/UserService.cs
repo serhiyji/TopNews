@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Entities.User;
+using TopNews.Core.Validation.User;
 
 namespace TopNews.Core.Services
 {
@@ -195,6 +197,48 @@ namespace TopNews.Core.Services
             await _emailService.SendEmailAsync(user.Email, "Email confirmation.", emailBody);
         }
 
+        public async Task<ServiceResponse> ForgotPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return new ServiceResponse(false, "User exists");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Encoding.UTF8.GetBytes(token);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/ResetPassword?email={email}&token={validEmailToken}";
+
+            string emailBody = $"<h1>Follow the instruction for reset password.</h1><a href='{url}'>Reset now!</a>";
+            await _emailService.SendEmailAsync(email, "Reset password for TopNews.", emailBody);
+
+            return new ServiceResponse(true, "Email successfull send.");
+        }
+
+        public async Task<ServiceResponse> VerifyNewPassword(PasswordRecoveryDto model)
+        {
+            AppUser? user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null)
+            {
+                ValidationResult resultValidation = new PasswordRecoveryValidation().Validate(model);
+                if (resultValidation.IsValid)
+                {
+                    var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
+                    string narmalToken = Encoding.UTF8.GetString(decodedToken);
+                    IdentityResult res = await _userManager.ResetPasswordAsync(user, narmalToken, model.Password);
+                    if (res.Succeeded)
+                    {
+                        return new ServiceResponse(true, "Password changed successfully");
+                    }
+                    return new ServiceResponse(false, "Something went wrong", errors: res.Errors.Select(e => e.Description));
+                }
+                return new ServiceResponse(false, "Something went wrong.", errors: resultValidation.Errors.Select(e => e.ErrorMessage));
+            }
+            return new ServiceResponse(false, "User not found.");
+        }
+
         public async Task<ServiceResponse> ConfirmEmailAsync(string userId, string token)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -213,6 +257,7 @@ namespace TopNews.Core.Services
             }
             return new ServiceResponse(false, "Email not confirmed", errors: result.Errors.Select(e => e.Description));
         }
+
         #endregion
     }
 }
