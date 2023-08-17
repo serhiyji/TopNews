@@ -34,7 +34,6 @@ namespace TopNews.Core.Services
         }
 
         #region Signin / Signup / Sign out
-
         public async Task<ServiceResponse> LoginUserAsync(UserLoginDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -66,21 +65,22 @@ namespace TopNews.Core.Services
             await _signInManager.SignOutAsync();
             return new ServiceResponse(true);
         }
-
         #endregion
 
         #region Get users mapped
-
-        private async Task<(bool Success, AppUser user)> GetAppUserByIdAsyck(string Id)
+        private async Task<ServiceResponse<AppUser, string>> GetAppUserByIdAsyck(string Id)
         {
-            var user = await _userManager.FindByIdAsync(Id);
-            return user == null ? (false, null) : (true, user);
+            AppUser? user = await _userManager.FindByIdAsync(Id);
+            return user == null ?
+                new ServiceResponse<AppUser, string>(false, "User not found.", errors: new List<string>() { "User not found." }) :
+                new ServiceResponse<AppUser, string>(true, "User succesfully loaded", payload: user);
         }
-        private async Task<ServiceResponse<Mapped, object>> GetMappedUserById<Mapped>(string Id)
+
+        private async Task<ServiceResponse<Mapped, object>> GetMappedUserByIdAsync<Mapped>(string Id)
         {
-            var result = await this.GetAppUserByIdAsyck(Id);
+            ServiceResponse<AppUser, string> result = await this.GetAppUserByIdAsyck(Id);
             return (result.Success) ?
-                new ServiceResponse<Mapped, object>(true, "User succesfully loaded", payload: _mapper.Map<AppUser, Mapped>(result.user)) :
+                new ServiceResponse<Mapped, object>(true, "User succesfully loaded", payload: _mapper.Map<AppUser, Mapped>(result.Payload)) :
                 new ServiceResponse<Mapped, object>(false, "User not found");
         }
         public async Task<ServiceResponse<List<UsersDto>, object>> GetAllAsync()
@@ -95,13 +95,11 @@ namespace TopNews.Core.Services
 
             return new ServiceResponse<List<UsersDto>, object>(true, "All Users loaded", payload: mappedUsers);
         }
-        public async Task<ServiceResponse<UpdateUserDto, object>> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserById<UpdateUserDto>(Id).Result;
-        public async Task<ServiceResponse<DeleteUserDto, object>> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserById<DeleteUserDto>(Id).Result;
-
+        public async Task<ServiceResponse<UpdateUserDto, object>> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<UpdateUserDto>(Id).Result;
+        public async Task<ServiceResponse<DeleteUserDto, object>> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<DeleteUserDto>(Id).Result;
         #endregion
 
         #region Change data users
-
         public async Task<ServiceResponse<object, string>> ChangePasswordAsync(UpdatePasswordDto model)
         {
             AppUser user = _userManager.FindByIdAsync(model.Id).Result;
@@ -135,11 +133,9 @@ namespace TopNews.Core.Services
             }
             return new ServiceResponse<object, IdentityError>(false, "Not found user");
         }
-
         #endregion
 
         #region Create, Delete, Edit user
-
         public async Task<ServiceResponse<string, object>> GetEmailById(string Id)
         {
             AppUser user = await _userManager.FindByIdAsync(Id);
@@ -184,7 +180,7 @@ namespace TopNews.Core.Services
 
         #endregion
 
-        #region Email
+        #region Confirm email
         public async Task SendConfirmationEmailAsync(AppUser user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -195,48 +191,6 @@ namespace TopNews.Core.Services
 
             string emailBody = $"<h1>Confirm your email</h1> <a href='{url}'>Confirm now!</a>";
             await _emailService.SendEmailAsync(user.Email, "Email confirmation.", emailBody);
-        }
-
-        public async Task<ServiceResponse> ForgotPasswordAsync(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                return new ServiceResponse(false, "User exists");
-            }
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var encodedToken = Encoding.UTF8.GetBytes(token);
-            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
-
-            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/ResetPassword?email={email}&token={validEmailToken}";
-
-            string emailBody = $"<h1>Follow the instruction for reset password.</h1><a href='{url}'>Reset now!</a>";
-            await _emailService.SendEmailAsync(email, "Reset password for TopNews.", emailBody);
-
-            return new ServiceResponse(true, "Email successfull send.");
-        }
-
-        public async Task<ServiceResponse> VerifyNewPassword(PasswordRecoveryDto model)
-        {
-            AppUser? user = await _userManager.FindByEmailAsync(model.Email);
-            if (user != null)
-            {
-                ValidationResult resultValidation = new PasswordRecoveryValidation().Validate(model);
-                if (resultValidation.IsValid)
-                {
-                    var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
-                    string narmalToken = Encoding.UTF8.GetString(decodedToken);
-                    IdentityResult res = await _userManager.ResetPasswordAsync(user, narmalToken, model.Password);
-                    if (res.Succeeded)
-                    {
-                        return new ServiceResponse(true, "Password changed successfully");
-                    }
-                    return new ServiceResponse(false, "Something went wrong", errors: res.Errors.Select(e => e.Description));
-                }
-                return new ServiceResponse(false, "Something went wrong.", errors: resultValidation.Errors.Select(e => e.ErrorMessage));
-            }
-            return new ServiceResponse(false, "User not found.");
         }
 
         public async Task<ServiceResponse> ConfirmEmailAsync(string userId, string token)
@@ -257,7 +211,46 @@ namespace TopNews.Core.Services
             }
             return new ServiceResponse(false, "Email not confirmed", errors: result.Errors.Select(e => e.Description));
         }
+        #endregion
 
+        #region Password recovery
+        public async Task<ServiceResponse> ForgotPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return new ServiceResponse(false, "User not found.");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Encoding.UTF8.GetBytes(token);
+            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
+
+            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/ResetPassword?email={email}&token={validEmailToken}";
+
+            string emailBody = $"<h1>Follow the instruction for reset password.</h1><a href='{url}'>Reset now!</a>";
+            await _emailService.SendEmailAsync(email, "Reset password for TopNews.", emailBody);
+
+            return new ServiceResponse(true, "Email successfull send.");
+        }
+
+        public async Task<ServiceResponse> VerifyNewPassword(PasswordRecoveryDto model)
+        {
+            AppUser? user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return new ServiceResponse(false, "User not found.");
+            }
+            
+            var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
+            string narmalToken = Encoding.UTF8.GetString(decodedToken);
+            IdentityResult res = await _userManager.ResetPasswordAsync(user, narmalToken, model.Password);
+            if (res.Succeeded)
+            {
+                return new ServiceResponse(true, "Password changed successfully");
+            }
+            return new ServiceResponse(false, "Something went wrong", errors: res.Errors.Select(e => e.Description));
+        }
         #endregion
     }
 }

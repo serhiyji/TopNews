@@ -235,6 +235,14 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> ResetPassword(PasswordRecoveryDto model)
         {
             var result = await _userService.VerifyNewPassword(model);
+            ValidationResult resultValidation = new PasswordRecoveryValidation().Validate(model);
+            if (!resultValidation.IsValid)
+            {
+                ViewBag.Email = model.Email;
+                ViewBag.Token = model.Token;
+                ViewBag.AuthError = resultValidation.Errors.Any() ? resultValidation.Errors.First().ErrorMessage : null;
+                return View(nameof(ResetPassword));
+            }
             if (result.Success)
             {
                 return View(nameof(SignIn));
