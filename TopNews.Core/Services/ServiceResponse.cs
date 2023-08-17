@@ -19,8 +19,6 @@ namespace TopNews.Core.Services
         public string Message { get; set; } = string.Empty;
         public PayloadType Payload { get; set; } = default;
         public IEnumerable<ErrorType> Errors { get; set; } = Enumerable.Empty<ErrorType>();
-        public bool IsErrorsEmpty => Errors != null && Errors.Any();
-        public ErrorType? GetFirstError => IsErrorsEmpty ? default : Errors.First();
     }
     public class ServiceResponse : ServiceResponse<object, object>
     {

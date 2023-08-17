@@ -24,9 +24,8 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
-        #region Signin / Signup / Sign out
-
-        [AllowAnonymous] // GET
+        #region Sign In page
+        [AllowAnonymous]
         public IActionResult SignIn()
         {
             bool userAuthenticated = HttpContext.User.Identity.IsAuthenticated;
@@ -37,13 +36,13 @@ namespace TopNews.Web.Controllers
             return View();
         }
 
-        [AllowAnonymous] // HOST
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignIn(UserLoginDto model)
         {
             LoginUserValidation validator = new LoginUserValidation();
-            ValidationResult valationReslt = validator.Validate(model);
+            ValidationResult valationReslt = await validator.ValidateAsync(model);
             if (valationReslt.IsValid) 
             {
                 ServiceResponse result = await _userService.LoginUserAsync(model);
@@ -57,7 +56,9 @@ namespace TopNews.Web.Controllers
             ViewBag.AuthError = valationReslt.Errors[0];
             return View(model); 
         }
+        #endregion
 
+        #region Log out page
         [HttpPost]
         public async Task<IActionResult> LogOut()
         {
@@ -68,7 +69,6 @@ namespace TopNews.Web.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-
         #endregion
 
         #region Get all users page
@@ -107,7 +107,7 @@ namespace TopNews.Web.Controllers
                 {
                     return View("Profile", new UpdateProfileVM() { UserInfo = model });
                 }
-                ViewBag.UserUpdateError = result.GetFirstError;
+                ViewBag.UserUpdateError = result.Errors.FirstOrDefault();
                 return View("Profile", new UpdateProfileVM() { UserInfo = model });
             }
             ViewBag.UserUpdateError = validationResult.Errors[0];
@@ -157,7 +157,7 @@ namespace TopNews.Web.Controllers
                 }
                 else
                 {
-                    ViewBag.CreateUserError = response.GetFirstError;
+                    ViewBag.CreateUserError = response.Errors.FirstOrDefault();
                     return View();
                 }
             }
@@ -169,10 +169,6 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> ConfirmEmail(string userid, string token)
         {
             var result = await _userService.ConfirmEmailAsync(userid, token);
-            if (result.Success)
-            {
-                return Redirect(nameof(SignIn));
-            }
             return Redirect(nameof(SignIn));
         }
         #endregion
@@ -189,11 +185,10 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> Delete(DeleteUserDto model)
         {
             ServiceResponse<object, IdentityError> result = await _userService.DeleteUserAsync(model);
-            if (result.Success)
+            if (!result.Success)
             {
-                return RedirectToAction(nameof(GetAll));
+                ViewBag.GetAllError = result.Errors.FirstOrDefault();
             }
-            ViewBag.GetAllError = result.GetFirstError;
             return RedirectToAction(nameof(GetAll));
         }
         #endregion
@@ -235,21 +230,19 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> ResetPassword(PasswordRecoveryDto model)
         {
             var result = await _userService.VerifyNewPassword(model);
-            ValidationResult resultValidation = new PasswordRecoveryValidation().Validate(model);
+            ValidationResult resultValidation = await new PasswordRecoveryValidation().ValidateAsync(model);
+            ViewBag.Email = model.Email;
+            ViewBag.Token = model.Token;
             if (!resultValidation.IsValid)
             {
-                ViewBag.Email = model.Email;
-                ViewBag.Token = model.Token;
-                ViewBag.AuthError = resultValidation.Errors.Any() ? resultValidation.Errors.First().ErrorMessage : null;
+                ViewBag.AuthError = resultValidation.Errors.FirstOrDefault();
                 return View(nameof(ResetPassword));
             }
             if (result.Success)
             {
                 return View(nameof(SignIn));
             }
-            ViewBag.Email = model.Email;
-            ViewBag.Token = model.Token;
-            ViewBag.AuthError = result.IsErrorsEmpty ? result.Message : result.GetFirstError;
+            ViewBag.AuthError = result.Errors.Any() ? result.Errors.FirstOrDefault() : result.Message;
             return View();
         }
         #endregion
