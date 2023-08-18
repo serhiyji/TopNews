@@ -150,7 +150,7 @@ namespace TopNews.Web.Controllers
             var validationResult = await validaor.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                ServiceResponse<object, IdentityError> response = await _userService.CreateUserAsync(model);
+                ServiceResponse response = await _userService.CreateUserAsync(model);
                 if (response.Success)
                 {
                     return RedirectToAction(nameof(GetAll));
@@ -184,7 +184,7 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(DeleteUserDto model)
         {
-            ServiceResponse<object, IdentityError> result = await _userService.DeleteUserAsync(model);
+            ServiceResponse result = await _userService.DeleteUserAsync(model);
             if (!result.Success)
             {
                 ViewBag.GetAllError = result.Errors.FirstOrDefault();
@@ -229,7 +229,7 @@ namespace TopNews.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(PasswordRecoveryDto model)
         {
-            var result = await _userService.VerifyNewPassword(model);
+            var result = await _userService.ResetPasswordAsync(model);
             ValidationResult resultValidation = await new PasswordRecoveryValidation().ValidateAsync(model);
             ViewBag.Email = model.Email;
             ViewBag.Token = model.Token;
@@ -240,6 +240,7 @@ namespace TopNews.Web.Controllers
             }
             if (result.Success)
             {
+                ViewBag.AuthError = result.Message;
                 return View(nameof(SignIn));
             }
             ViewBag.AuthError = result.Errors.Any() ? result.Errors.FirstOrDefault() : result.Message;

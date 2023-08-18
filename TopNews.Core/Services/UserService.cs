@@ -33,7 +33,7 @@ namespace TopNews.Core.Services
             this._configuration = configuration;
         }
 
-        #region Signin / Signup / Sign out
+        #region SignIn, SignOut
         public async Task<ServiceResponse> LoginUserAsync(UserLoginDto model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
@@ -99,7 +99,49 @@ namespace TopNews.Core.Services
         public async Task<ServiceResponse<DeleteUserDto, object>> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<DeleteUserDto>(Id).Result;
         #endregion
 
-        #region Change data users
+        #region Create user, Delete user, Edit password user, Edit main info user
+        public async Task<ServiceResponse<string, object>> GetEmailById(string Id)
+        {
+            AppUser user = await _userManager.FindByIdAsync(Id);
+            return (user != null) ?
+                new ServiceResponse<string, object>(true, "", payload: user.Email) :
+                new ServiceResponse<string, object>(false);
+        }
+
+        public async Task<ServiceResponse> CreateUserAsync(CreateUserDto model)
+        {
+            AppUser NewUser = _mapper.Map<CreateUserDto, AppUser>(model);
+            IdentityResult result = await _userManager.CreateAsync(NewUser, model.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(NewUser, model.Role);
+                await SendConfirmationEmailAsync(NewUser);
+                return new ServiceResponse(true, "User has been added");
+            }
+            else
+            {
+                return new ServiceResponse(false, "Something went wrong", errors: result.Errors.Select(e => e.Description));
+            }
+        }
+
+        public async Task<ServiceResponse> DeleteUserAsync(DeleteUserDto model)
+        {
+            AppUser userdelete = await _userManager.FindByIdAsync(model.Id);
+            if (userdelete != null)
+            {
+                IdentityResult result = await _userManager.DeleteAsync(userdelete);
+                if (result.Succeeded)
+                {
+                    return new ServiceResponse(true);
+                }
+                else
+                {
+                    return new ServiceResponse(false, "something went wrong", errors: result.Errors.Select(e => e.Description));
+                }
+            }
+            return new ServiceResponse(false, "User a was found");
+        }
+
         public async Task<ServiceResponse<object, string>> ChangePasswordAsync(UpdatePasswordDto model)
         {
             AppUser user = _userManager.FindByIdAsync(model.Id).Result;
@@ -135,52 +177,7 @@ namespace TopNews.Core.Services
         }
         #endregion
 
-        #region Create, Delete, Edit user
-        public async Task<ServiceResponse<string, object>> GetEmailById(string Id)
-        {
-            AppUser user = await _userManager.FindByIdAsync(Id);
-            return (user != null) ?
-                new ServiceResponse<string, object>(true, "", payload: user.Email) :
-                new ServiceResponse<string, object>(false);
-        }
-
-        public async Task<ServiceResponse<object, IdentityError>> CreateUserAsync(CreateUserDto model)
-        {
-            AppUser NewUser = _mapper.Map<CreateUserDto, AppUser>(model);
-            IdentityResult result = await _userManager.CreateAsync(NewUser, model.Password);
-            if (result.Succeeded)
-            {
-                await _userManager.AddToRoleAsync(NewUser, model.Role);
-                await SendConfirmationEmailAsync(NewUser);
-                return new ServiceResponse<object, IdentityError>(true, "User has been added");
-            }
-            else
-            {
-                return new ServiceResponse<object, IdentityError>(false, "Something went wrong", errors: result.Errors);
-            }
-        }
-
-        public async Task<ServiceResponse<object, IdentityError>> DeleteUserAsync(DeleteUserDto model)
-        {
-            AppUser userdelete = await _userManager.FindByIdAsync(model.Id);
-            if (userdelete != null)
-            {
-                IdentityResult result = await _userManager.DeleteAsync(userdelete);
-                if (result.Succeeded)
-                {
-                    return new ServiceResponse<object, IdentityError>(true);
-                }
-                else
-                {
-                    return new ServiceResponse<object, IdentityError>(false, "something went wrong", errors: result.Errors);
-                }
-            }
-            return new ServiceResponse<object, IdentityError>(false, "User a was found");
-        }
-
-        #endregion
-
-        #region Confirm email
+        #region Confirm email and send token for confirm email
         public async Task SendConfirmationEmailAsync(AppUser user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -213,7 +210,7 @@ namespace TopNews.Core.Services
         }
         #endregion
 
-        #region Password recovery
+        #region Password recovery and send token for password recovery
         public async Task<ServiceResponse> ForgotPasswordAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -234,7 +231,7 @@ namespace TopNews.Core.Services
             return new ServiceResponse(true, "Email successfull send.");
         }
 
-        public async Task<ServiceResponse> VerifyNewPassword(PasswordRecoveryDto model)
+        public async Task<ServiceResponse> ResetPasswordAsync(PasswordRecoveryDto model)
         {
             AppUser? user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
