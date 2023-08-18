@@ -103,7 +103,7 @@ namespace TopNews.Web.Controllers
             var validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                ServiceResponse<object, IdentityError> result = await _userService.ChangeMainInfoUserAsync(model);
+                ServiceResponse result = await _userService.ChangeMainInfoUserAsync(model);
                 if (result.Success)
                 {
                     return View("Profile", new UpdateProfileVM() { UserInfo = model });
@@ -123,7 +123,7 @@ namespace TopNews.Web.Controllers
             var validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                ServiceResponse<object, string> result = await _userService.ChangePasswordAsync(model);
+                ServiceResponse result = await _userService.ChangePasswordAsync(model);
                 if (result.Success)
                 {
                     return RedirectToAction(nameof(SignIn));
