@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.User;
@@ -245,6 +246,48 @@ namespace TopNews.Web.Controllers
             }
             ViewBag.AuthError = result.Errors.Any() ? result.Errors.FirstOrDefault() : result.Message;
             return View();
+        }
+        #endregion
+
+        #region Edit other user page
+        public async Task<IActionResult> EditUser(string id)
+        {
+
+            var result = await _userService.GetEditUserDtoByIdAsync(id);
+            if (result.Success)
+            {
+                await LoadRoles();
+                return View(result.Payload);
+            }
+            return View(nameof(Index));
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> EditUser(EditUserDto model)
+        {
+            var validationResult = await new EditUserValidation().ValidateAsync(model);
+            if (validationResult.IsValid)
+            {
+                var result = await _userService.EditUserAsync(model);
+                if (result.Success)
+                {
+                    return View(nameof(Index));
+                }
+                return View(nameof(Index));
+            }
+
+            await LoadRoles();
+            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+            return View(nameof(EditUser));
+        }
+
+        private async Task LoadRoles()
+        {
+            var result = await _userService.GetAllRolesAsync();
+            @ViewBag.RoleList = new SelectList((System.Collections.IEnumerable)result, 
+                nameof(IdentityRole.Name), nameof(IdentityRole.Name)
+              );
         }
         #endregion
     }

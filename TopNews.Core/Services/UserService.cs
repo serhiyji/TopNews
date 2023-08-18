@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 using TopNews.Core.DTOs.User;
@@ -20,14 +21,16 @@ namespace TopNews.Core.Services
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly EmailService _emailService;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
 
-        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, EmailService emailService, IMapper mapper, IConfiguration configuration)
+        public UserService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<IdentityRole> roleManager, EmailService emailService, IMapper mapper, IConfiguration configuration)
         {
             this._signInManager = signInManager;
             this._userManager = userManager;
+            this._roleManager = roleManager;
             this._emailService = emailService;
             this._mapper = mapper;
             this._configuration = configuration;
@@ -97,6 +100,8 @@ namespace TopNews.Core.Services
         }
         public async Task<ServiceResponse<UpdateUserDto, object>> GetUpdateUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<UpdateUserDto>(Id).Result;
         public async Task<ServiceResponse<DeleteUserDto, object>> GetDeleteUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<DeleteUserDto>(Id).Result;
+        public async Task<ServiceResponse<EditUserDto, object>> GetEditUserDtoByIdAsync(string Id) => this.GetMappedUserByIdAsync<EditUserDto>(Id).Result;
+        
         #endregion
 
         #region Create user, Delete user, Edit password user, Edit main info user
@@ -247,6 +252,47 @@ namespace TopNews.Core.Services
                 return new ServiceResponse(true, "Password changed successfully");
             }
             return new ServiceResponse(false, "Something went wrong", errors: res.Errors.Select(e => e.Description));
+        }
+        #endregion
+
+        #region User edit use admin panel
+        public async Task<List<IdentityRole>> GetAllRolesAsync()
+        {
+            List<IdentityRole> roles = await _roleManager.Roles.ToListAsync();
+            return roles;
+        }
+
+        public async Task<ServiceResponse> EditUserAsync(EditUserDto model)
+        {
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null)
+            {
+                return new ServiceResponse(false, "User not found.", errors: new List<string>() { "User not found." });
+            }
+
+            if (user.Email != model.Email)
+            {
+                user.EmailConfirmed = false;
+                user.Email = model.Email;
+                user.UserName = model.Email;
+                await SendConfirmationEmailAsync(user);
+            }
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.PhoneNumber = model.PhoneNumber;
+
+            var roles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, roles);
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, model.Role);
+
+                return new ServiceResponse(true, "User successfully updated.");
+            }
+            return new ServiceResponse(false, "Something went wrong", errors: result.Errors.Select(e => e.Description));
         }
         #endregion
     }
