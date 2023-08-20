@@ -46,7 +46,7 @@ namespace TopNews.Core.Services
         #region SignIn, SignOut
         public async Task<ServiceResponse> LoginUserAsync(UserLoginDto model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            AppUser? user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 return new ServiceResponse(false, "User or password incorect.");
@@ -167,11 +167,11 @@ namespace TopNews.Core.Services
         #region Confirm email and send token for confirm email
         public async Task SendConfirmationEmailAsync(AppUser user)
         {
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedToken = Encoding.UTF8.GetBytes(token);
-            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
+            string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            byte[] encodedToken = Encoding.UTF8.GetBytes(token);
+            string validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
 
-            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/confirmemail?userid={user.Id}&token={validEmailToken}";
+            string url = $"{_configuration["HostSettings:URL"]}/Dashboard/confirmemail?userid={user.Id}&token={validEmailToken}";
 
             string emailBody = $"<h1>Confirm your email</h1> <a href='{url}'>Confirm now!</a>";
             await _emailService.SendEmailAsync(user.Email, "Email confirmation.", emailBody);
@@ -179,16 +179,16 @@ namespace TopNews.Core.Services
 
         public async Task<ServiceResponse> ConfirmEmailAsync(string userId, string token)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            AppUser? user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return new ServiceResponse(false, "User not found");
             }
 
-            var decodedToken = WebEncoders.Base64UrlDecode(token);
+            byte[] decodedToken = WebEncoders.Base64UrlDecode(token);
             string narmalToken = Encoding.UTF8.GetString(decodedToken);
 
-            var result = await _userManager.ConfirmEmailAsync(user, narmalToken);
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, narmalToken);
             if (result.Succeeded)
             {
                 return new ServiceResponse(true, "Email successfully confirmed.");
@@ -200,17 +200,17 @@ namespace TopNews.Core.Services
         #region Password recovery and send token for password recovery
         public async Task<ServiceResponse> ForgotPasswordAsync(string email)
         {
-            var user = await _userManager.FindByEmailAsync(email);
+            AppUser? user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 return new ServiceResponse(false, "User not found.");
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var encodedToken = Encoding.UTF8.GetBytes(token);
-            var validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
+            string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            byte[] encodedToken = Encoding.UTF8.GetBytes(token);
+            string validEmailToken = WebEncoders.Base64UrlEncode(encodedToken);
 
-            var url = $"{_configuration["HostSettings:URL"]}/Dashboard/ResetPassword?email={email}&token={validEmailToken}";
+            string url = $"{_configuration["HostSettings:URL"]}/Dashboard/ResetPassword?email={email}&token={validEmailToken}";
 
             string emailBody = $"<h1>Follow the instruction for reset password.</h1><a href='{url}'>Reset now!</a>";
             await _emailService.SendEmailAsync(email, "Reset password for TopNews.", emailBody);
@@ -226,7 +226,7 @@ namespace TopNews.Core.Services
                 return new ServiceResponse(false, "User not found.");
             }
             
-            var decodedToken = WebEncoders.Base64UrlDecode(model.Token);
+            byte[] decodedToken = WebEncoders.Base64UrlDecode(model.Token);
             string narmalToken = Encoding.UTF8.GetString(decodedToken);
             IdentityResult res = await _userManager.ResetPasswordAsync(user, narmalToken, model.Password);
             if (res.Succeeded)
@@ -246,7 +246,7 @@ namespace TopNews.Core.Services
 
         public async Task<ServiceResponse> EditUserAsync(EditUserDto model)
         {
-            var user = await _userManager.FindByIdAsync(model.Id);
+            AppUser? user = await _userManager.FindByIdAsync(model.Id);
             if (user == null)
             {
                 return new ServiceResponse(false, "User not found.", errors: new List<string>() { "User not found." });
@@ -264,10 +264,10 @@ namespace TopNews.Core.Services
             user.LastName = model.LastName;
             user.PhoneNumber = model.PhoneNumber;
 
-            var roles = await _userManager.GetRolesAsync(user);
+            IList<string> roles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, roles);
 
-            var result = await _userManager.UpdateAsync(user);
+            IdentityResult result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, model.Role);

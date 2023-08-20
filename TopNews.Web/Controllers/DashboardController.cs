@@ -64,11 +64,7 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> LogOut()
         {
             ServiceResponse response = await _userService.SignOutAsync();
-            if (response.Success)
-            {
-                return RedirectToAction(nameof(SignIn));
-            }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(SignIn));
         }
         #endregion
 
@@ -99,8 +95,8 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeMainInfo(UpdateUserDto model)
         {
-            var validator = new UpdateUserValidation();
-            var validationResult = await validator.ValidateAsync(model);
+            UpdateUserValidation validator = new UpdateUserValidation();
+            ValidationResult validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
                 ServiceResponse result = await _userService.ChangeMainInfoUserAsync(model);
@@ -119,8 +115,8 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(UpdatePasswordDto model)
         {
-            var validator = new UpdatePasswordValidation();
-            var validationResult = await validator.ValidateAsync(model);
+            UpdatePasswordValidation validator = new UpdatePasswordValidation();
+            ValidationResult validationResult = await validator.ValidateAsync(model);
             if (validationResult.IsValid)
             {
                 ServiceResponse result = await _userService.ChangePasswordAsync(model);
@@ -147,29 +143,26 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateUserDto model)
         {
-            var validaor = new CreateUserValidation();
-            var validationResult = await validaor.ValidateAsync(model);
+            CreateUserValidation validaor = new CreateUserValidation();
+            ValidationResult validationResult = await validaor.ValidateAsync(model);
             if (validationResult.IsValid)
             {
                 ServiceResponse response = await _userService.CreateUserAsync(model);
                 if (response.Success)
                 {
-                    return RedirectToAction(nameof(GetAll));
+                    return RedirectToAction(nameof(Index));
                 }
-                else
-                {
-                    ViewBag.CreateUserError = response.Errors.FirstOrDefault();
-                    return View();
-                }
+                ViewBag.CreateUserError = response.Errors.FirstOrDefault();
+                return View();
             }
-            ViewBag.CreateUserError = validationResult.Errors[0];
+            ViewBag.CreateUserError = validationResult.Errors.FirstOrDefault();
             return View();
         }
 
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userid, string token)
         {
-            var result = await _userService.ConfirmEmailAsync(userid, token);
+            ServiceResponse result = await _userService.ConfirmEmailAsync(userid, token);
             return Redirect(nameof(SignIn));
         }
         #endregion
@@ -178,7 +171,11 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> Delete(string id)
         {
             ServiceResponse<DeleteUserDto, object> result = await _userService.GetDeleteUserDtoByIdAsync(id);
-            return View(result.Payload);
+            if (result.Success)
+            {
+                return View(result.Payload);
+            }
+            return View(nameof(GetAll));
         }
 
         [HttpPost]
@@ -205,7 +202,7 @@ namespace TopNews.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(string email)
         {
-            var result = await _userService.ForgotPasswordAsync(email);
+            ServiceResponse result = await _userService.ForgotPasswordAsync(email);
             if (result.Success)
             {
                 ViewBag.AuthError = "Check your email.";
@@ -230,7 +227,7 @@ namespace TopNews.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPassword(PasswordRecoveryDto model)
         {
-            var result = await _userService.ResetPasswordAsync(model);
+            ServiceResponse result = await _userService.ResetPasswordAsync(model);
             ValidationResult resultValidation = await new PasswordRecoveryValidation().ValidateAsync(model);
             ViewBag.Email = model.Email;
             ViewBag.Token = model.Token;
@@ -253,7 +250,7 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> EditUser(string id)
         {
 
-            var result = await _userService.GetEditUserDtoByIdAsync(id);
+            ServiceResponse<EditUserDto, object> result = await _userService.GetEditUserDtoByIdAsync(id);
             if (result.Success)
             {
                 await LoadRoles();
@@ -266,17 +263,16 @@ namespace TopNews.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> EditUser(EditUserDto model)
         {
-            var validationResult = await new EditUserValidation().ValidateAsync(model);
+            ValidationResult validationResult = await new EditUserValidation().ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                var result = await _userService.EditUserAsync(model);
+                ServiceResponse result = await _userService.EditUserAsync(model);
                 if (result.Success)
                 {
                     return View(nameof(Index));
                 }
                 return View(nameof(Index));
             }
-
             await LoadRoles();
             ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
             return View(nameof(EditUser));
@@ -284,7 +280,7 @@ namespace TopNews.Web.Controllers
 
         private async Task LoadRoles()
         {
-            var result = await _userService.GetAllRolesAsync();
+            List<IdentityRole> result = await _userService.GetAllRolesAsync();
             @ViewBag.RoleList = new SelectList((System.Collections.IEnumerable)result, 
                 nameof(IdentityRole.Name), nameof(IdentityRole.Name)
               );
