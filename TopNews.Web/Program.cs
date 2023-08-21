@@ -18,6 +18,9 @@ builder.Services.AddInfrastructureServices();
 // Add maping
 builder.Services.AddMapping();
 
+// Add repositories
+builder.Services.AddRepositories();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
