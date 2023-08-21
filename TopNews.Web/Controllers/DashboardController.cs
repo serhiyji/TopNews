@@ -14,10 +14,12 @@ namespace TopNews.Web.Controllers
     public class DashboardController : Controller
     {
         private readonly UserService _userService;
+        private readonly CategoryService _categoryService;
 
-        public DashboardController(UserService userService)
+        public DashboardController(UserService userService, CategoryService categoryService)
         {
             _userService = userService;
+            _categoryService = categoryService;
         }
 
         public IActionResult Index()
