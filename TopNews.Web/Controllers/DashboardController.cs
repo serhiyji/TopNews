@@ -124,7 +124,7 @@ namespace TopNews.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(UpdatePasswordDto model)
+        public async Task<IActionResult> ChangePasswordInfo(UpdatePasswordDto model)
         {
             UpdatePasswordValidation validator = new UpdatePasswordValidation();
             ValidationResult validationResult = await validator.ValidateAsync(model);
