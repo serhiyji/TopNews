@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TopNews.Core.DTOs.Category;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.User;
@@ -78,6 +79,14 @@ namespace TopNews.Web.Controllers
         }
         #endregion
 
+        #region Get all ctegoties page
+        public async Task<IActionResult> GetAllCategories()
+        {
+            List<CategoryDto> categories = await _categoryService.GetAll();
+            return View(categories);
+        }
+        #endregion
+
         #region Profile page
         public async Task<IActionResult> Profile(string Id)
         {
@@ -136,14 +145,14 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Create user page
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> CreateUser()
         {
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateUserDto model)
+        public async Task<IActionResult> CreateUser(CreateUserDto model)
         {
             CreateUserValidation validaor = new CreateUserValidation();
             ValidationResult validationResult = await validaor.ValidateAsync(model);
@@ -170,7 +179,7 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Delete user page
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> DeleteUser(string id)
         {
             ServiceResponse<DeleteUserDto, object> result = await _userService.GetDeleteUserDtoByIdAsync(id);
             if (result.Success)
@@ -182,7 +191,7 @@ namespace TopNews.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(DeleteUserDto model)
+        public async Task<IActionResult> DeleteUser(DeleteUserDto model)
         {
             ServiceResponse result = await _userService.DeleteUserAsync(model);
             if (!result.Success)

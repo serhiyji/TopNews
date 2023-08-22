@@ -1,12 +1,12 @@
 ﻿﻿@using Microsoft.AspNetCore.Identity;
+@using TopNews.Core.DTOs.Category;
 @using TopNews.Core.DTOs.User;
 @using TopNews.Core.Entities.User;
-@model List<UsersDto>
+@model List<CategoryDto>
 @inject UserManager<AppUser> UserManager
 
 @{
     var user = await UserManager.GetUserAsync(User);
-    var email = await UserManager.GetEmailAsync(user);
 }
 @{
     <!-- DataTables -->
@@ -22,7 +22,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>All users</h1>
+                    <h1>All categories</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -41,19 +41,15 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">User list with minimal information</h3>
+                            <h3 class="card-title">Categories list with minimal information</h3>
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body">
                             <table id="example2" class="table table-bordered table-hover">
                                 <thead>
                                     <tr>
-                                        <th>First name</th>
-                                        <th>Last name</th>
-                                        <th>Email</th>
-                                        <th>Email confirmed</th>
-                                        <th>Lockout</th>
-                                        <th>Role</th>
+                                        <th>Id</th>
+                                        <th>Name</th>
                                         @if (@User.IsInRole("Administrator"))
                                         {
                                             <th>Edit</th>
@@ -66,16 +62,12 @@
                                     @foreach (var item in Model)
                                     {
                                         <tr>
-                                            <td>@item.FirstName</td>
-                                            <td>@item.LastName</td>
-                                            <td>@item.Email</td>
-                                            <td>@item.EmailConfirmed</td>
-                                            <td>@item.LockedOut</td>
-                                            <td> @item.Role</td>
-                                            @if (@User.IsInRole("Administrator") && item.Email != email)
+                                            <td>@item.Id</td>
+                                            <td>@item.Name</td>
+                                            @if (@User.IsInRole("Administrator"))
                                             {
                                                 <td><a asp-controller="Dashboard" asp-action="EditUser" asp-route-id="@item.Id" class="btn btn-block btn-warning btn-sm">Edit</a></td>
-                                                <td><a asp-controller="Dashboard" asp-action="DeleteUser" asp-route-id="@item.Id" class="btn btn-block btn-danger btn-sm">Delete</a></td>
+                                                <td><a asp-controller="Dashboard" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-block btn-danger btn-sm">Delete</a></td>
                                             }
                                         </tr>
                                     }
