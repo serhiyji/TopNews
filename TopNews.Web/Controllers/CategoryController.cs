@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 using TopNews.Core.DTOs.Category;
+using TopNews.Core.DTOs.User;
 using TopNews.Core.Interfaces;
 using TopNews.Core.Services;
+using TopNews.Core.Validation.Category;
+using TopNews.Core.Validation.User;
 
 namespace TopNews.Web.Controllers
 {
@@ -25,9 +30,9 @@ namespace TopNews.Web.Controllers
         }
 
         #region Get All page
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            List<CategoryDto> categories = _categoryService.GetAll().Result;
+            List<CategoryDto> categories =  await _categoryService.GetAll();
             return View(categories);
         }
         #endregion
@@ -37,9 +42,20 @@ namespace TopNews.Web.Controllers
         {
             return View();
         }
-        public IActionResult Create(CategoryDto model) 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CategoryDto model) 
         {
-            return View();
+            CreateCategoryValidation validator = new CreateCategoryValidation();
+            var validationResult = await validator.ValidateAsync(model);
+            if (!validationResult.IsValid)
+            {
+                ViewBag.CreateCategoryError = validationResult.Errors.FirstOrDefault();
+                return View();
+            }
+            await _categoryService.Create(model);
+
+            return RedirectToAction(nameof(GetAll));
         }
         #endregion
 

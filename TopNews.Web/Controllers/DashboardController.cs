@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using TopNews.Core.DTOs.Category;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.User;
