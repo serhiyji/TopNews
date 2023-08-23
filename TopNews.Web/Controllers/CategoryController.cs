@@ -62,10 +62,10 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Update page
-        public async Task<IActionResult> Update()
+        public async Task<IActionResult> Update(int id)
         {
-            await LoadCategories();
-            return View();
+            var categotyinfo = await _categoryService.Get(id);
+            return View(categotyinfo);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -74,19 +74,24 @@ namespace TopNews.Web.Controllers
             await _categoryService.Update(model);
             return RedirectToAction(nameof(GetAll));
         }
-        private async Task LoadCategories()
-        {
-            List<CategoryDto> result = await _categoryService.GetAll();
-            @ViewBag.CategoryList = new SelectList((System.Collections.IEnumerable)result,
-                nameof(CategoryDto.Id), nameof(CategoryDto.Name)
-              );
-        }
         #endregion
 
         #region Delete
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            return View();
+            CategoryDto? category = await _categoryService.Get(id);
+            if (category == null) 
+            { 
+                return RedirectToAction(nameof(GetAll));
+            }
+            return View(category);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(CategoryDto model)
+        {
+            await _categoryService.Delete(model.Id);
+            return RedirectToAction(nameof(GetAll));
         }
         #endregion
 
