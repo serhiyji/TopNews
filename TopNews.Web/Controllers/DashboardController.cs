@@ -15,12 +15,10 @@ namespace TopNews.Web.Controllers
     public class DashboardController : Controller
     {
         private readonly UserService _userService;
-        private readonly CategoryService _categoryService;
 
-        public DashboardController(UserService userService, CategoryService categoryService)
+        public DashboardController(UserService userService)
         {
             _userService = userService;
-            _categoryService = categoryService;
         }
 
         public IActionResult Index()
@@ -76,14 +74,6 @@ namespace TopNews.Web.Controllers
         {
             ServiceResponse<List<UsersDto>, object> result = await _userService.GetAllAsync();
             return View(result.Payload);
-        }
-        #endregion
-
-        #region Get all ctegoties page
-        public async Task<IActionResult> GetAllCategories()
-        {
-            List<CategoryDto> categories = await _categoryService.GetAll();
-            return View(categories);
         }
         #endregion
 
