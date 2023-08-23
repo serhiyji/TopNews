@@ -11,5 +11,9 @@ namespace TopNews.Core.Interfaces
     public interface ICategoryService
     {
         Task<List<CategoryDto>> GetAll();
+        Task<CategoryDto?> Get(int id);
+        Task Create(CategoryDto model);
+        Task Update(CategoryDto model);
+        Task Delete(int id);
     }
 }

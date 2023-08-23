@@ -20,10 +20,38 @@ namespace TopNews.Core.Services
             this._categoryRepo = categoryRepo;
         }
 
+        public async Task Create(CategoryDto model)
+        {
+            await _categoryRepo.Insert(_mapper.Map<Category>(model));
+            await _categoryRepo.Save();
+        }
+
+        public async Task Delete(int id)
+        {
+            CategoryDto? model = await Get(id);
+            if (model == null) return;
+            await _categoryRepo.Delete(id);
+            await _categoryRepo.Save();
+        }
+
+        public async Task<CategoryDto?> Get(int id)
+        {
+            if (id < 0) return null;
+            Category? category = await _categoryRepo.GetByID(id);
+            if(category == null) return null;
+            return _mapper.Map<CategoryDto?>(category);
+        }
+
         public async Task<List<CategoryDto>> GetAll()
         {
             var result = await _categoryRepo.GetAll();
             return _mapper.Map<List<CategoryDto>>(result);
+        }
+
+        public async Task Update(CategoryDto model)
+        {
+            await _categoryRepo.Update(_mapper.Map<Category>(model));
+            await _categoryRepo.Save();
         }
     }
 }
