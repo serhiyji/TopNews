@@ -1,6 +1,8 @@
 ﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using TopNews.Core.DTOs.Category;
 using TopNews.Core.DTOs.User;
@@ -60,13 +62,24 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Update page
-        public IActionResult Update()
+        public async Task<IActionResult> Update()
         {
+            await LoadCategories();
             return View();
         }
-        public IActionResult Update(CategoryDto model)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(CategoryDto model)
         {
-            return View();
+            await _categoryService.Update(model);
+            return RedirectToAction(nameof(GetAll));
+        }
+        private async Task LoadCategories()
+        {
+            List<CategoryDto> result = await _categoryService.GetAll();
+            @ViewBag.CategoryList = new SelectList((System.Collections.IEnumerable)result,
+                nameof(CategoryDto.Id), nameof(CategoryDto.Name)
+              );
         }
         #endregion
 
