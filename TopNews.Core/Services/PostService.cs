@@ -8,6 +8,7 @@ using TopNews.Core.DTOs.Post;
 using TopNews.Core.Interfaces;
 using TopNews.Core.Entities.Site;
 using TopNews.Core.DTOs.Category;
+using Microsoft.Extensions.Hosting;
 
 namespace TopNews.Core.Services
 {
@@ -37,9 +38,9 @@ namespace TopNews.Core.Services
         public async Task<PostDto?> Get(int id)
         {
             if (id < 0) return null;
-            Post? category = await _postRepo.GetByID(id);
-            if (category == null) return null;
-            return _mapper.Map<PostDto?>(category);
+            Post? post = await _postRepo.GetByID(id);
+            if (post == null) return null;
+            return _mapper.Map<PostDto?>(post);
         }
 
         public async Task<List<PostDto>> GetAll()
