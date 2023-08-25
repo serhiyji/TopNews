@@ -13,9 +13,9 @@
                     </div>
                     <div class="card-body">
                         <form role="form text-left" method="post" asp-controller="Category" asp-action="Update">
-                            @if (@ViewBag.AuthError != null)
+                            @if (@ViewBag.UpdateCategoryError != null)
                             {
-                                <span class="text-danger">@ViewBag.AuthError</span>
+                                <span class="text-danger">@ViewBag.UpdateCategoryError</span>
                             }
                             <div class="mb-3">
                                 <label>New name category</label>

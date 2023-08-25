@@ -12,7 +12,7 @@ namespace TopNews.Core.Validation.Category
     {
         public CreateCategoryValidation()
         {
-            RuleFor(c => c.Name).NotEmpty().MinimumLength(1);
+            RuleFor(c => c.Name).NotEmpty().MinimumLength(2).WithMessage("Must be at least 2 characters");
         }
     }
 }

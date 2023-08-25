@@ -15,5 +15,6 @@ namespace TopNews.Core.Interfaces
         Task Create(CategoryDto model);
         Task Update(CategoryDto model);
         Task Delete(int id);
+        Task<bool> IsNameCategoryInAllCategories(string NameCategory);
     }
 }

@@ -53,5 +53,10 @@ namespace TopNews.Core.Services
             await _categoryRepo.Update(_mapper.Map<Category>(model));
             await _categoryRepo.Save();
         }
+
+        public async Task<bool> IsNameCategoryInAllCategories(string NameCategory)
+        {
+            return (await this.GetAll()).Where(c => c.Name == NameCategory).Any();
+        }
     }
 }
