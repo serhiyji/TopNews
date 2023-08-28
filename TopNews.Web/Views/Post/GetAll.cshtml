@@ -53,7 +53,6 @@
                                         <th>Id</th>
                                         <th>Title</th>
                                         <th>Description</th>
-                                        <th>Text</th>
                                         <th>PublicationDateTime</th>
                                         <th>NameImage</th>
                                         @if (@User.IsInRole("Administrator"))
@@ -71,7 +70,6 @@
                                             <td>@item.Id</td>
                                             <td>@item.Title</td>
                                             <td>@item.Description</td>
-                                            <td>@item.Text</td>
                                             <td>@item.PublicationDateTime</td>
                                             <td>@item.ImagePath</td>
                                             @if (@User.IsInRole("Administrator"))

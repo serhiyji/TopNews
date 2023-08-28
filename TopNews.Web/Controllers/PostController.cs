@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TopNews.Core.DTOs.Category;
 using TopNews.Core.DTOs.Post;
 using TopNews.Core.Entities.Site;
@@ -12,9 +14,11 @@ namespace TopNews.Web.Controllers
     public class PostController : Controller
     {
         private readonly IPostService _postService;
-        public PostController(IPostService postService)
+        private readonly ICategoryService _categoryService;
+        public PostController(IPostService postService, ICategoryService categoryService)
         {
             _postService = postService;
+            _categoryService = categoryService;
         }
         public IActionResult Index()
         {
@@ -29,8 +33,9 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Create page
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await LoadCategories();
             return View();
         }
         [HttpPost]
@@ -88,5 +93,13 @@ namespace TopNews.Web.Controllers
             return RedirectToAction(nameof(GetAll));
         }
         #endregion
+
+        private async Task LoadCategories()
+        {
+            List<CategoryDto> result = await _categoryService.GetAll();
+            @ViewBag.CategoriesList = new SelectList((System.Collections.IEnumerable)result,
+                nameof(IdentityRole.Name), nameof(IdentityRole.Name)
+              );
+        }
     }
 }

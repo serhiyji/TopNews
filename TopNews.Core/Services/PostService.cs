@@ -24,7 +24,8 @@ namespace TopNews.Core.Services
         }
         public async Task Create(PostDto model)
         {
-            await _postRepo.Insert(_mapper.Map<Post>(model));
+            var newPost = _mapper.Map<Post>(model);
+            await _postRepo.Insert(newPost);
             await _postRepo.Save();
         }
 
