@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using TopNews.Core.DTOs.Category;
+using TopNews.Core.DTOs.Post;
 using TopNews.Core.DTOs.User;
 using TopNews.Core.Interfaces;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.Category;
 using TopNews.Core.Validation.User;
+using X.PagedList;
 
 namespace TopNews.Web.Controllers
 {
@@ -19,11 +21,13 @@ namespace TopNews.Web.Controllers
 
         private readonly UserService _userService;
         private readonly ICategoryService _categoryService;
+        private readonly IPostService _postService;
 
-        public CategoryController(UserService userService, ICategoryService categoryService)
+        public CategoryController(UserService userService, ICategoryService categoryService, IPostService postService)
         {
             _userService = userService;
             _categoryService = categoryService;
+            _postService = postService;
         }
 
         public IActionResult Index()
@@ -46,68 +50,83 @@ namespace TopNews.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CategoryDto model) 
+        public async Task<IActionResult> Create(CategoryDto model)
         {
             CreateCategoryValidation validator = new CreateCategoryValidation();
             var validationResult = await validator.ValidateAsync(model);
-            if (!validationResult.IsValid)
+            if (validationResult.IsValid)
             {
-                ViewBag.CreateCategoryError = validationResult.Errors.FirstOrDefault();
-                return View();
+                var result = await _categoryService.GetByName(model);
+                if (!result.Success)
+                {
+                    ViewBag.AuthError = "Category exists.";
+                    return View(model);
+                }
+                await _categoryService.Create(model);
+                return RedirectToAction(nameof(Index));
             }
-            if (await _categoryService.IsNameCategoryInAllCategories(model.Name))
-            {
-                ViewBag.CreateCategoryError = $"category named {model.Name} already exists";
-                return View();
-            }
-            await _categoryService.Create(model);
-            return RedirectToAction(nameof(GetAll));
+            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+            return View(model);
         }
         #endregion
 
         #region Update page
         public async Task<IActionResult> Update(int id)
         {
-            CategoryDto? categotyinfo = await _categoryService.Get(id);
-            return View(categotyinfo);
+            CategoryDto? categoryDto = await _categoryService.Get(id);
+            if (categoryDto == null)
+            {
+                ViewBag.AuthError = "Category not found.";
+                return View();
+            }
+            return View(categoryDto);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(CategoryDto model)
         {
-            var validationResult = await new CreateCategoryValidation().ValidateAsync(model);
-            if (!validationResult.IsValid)
+            ServiceResponse result = await _categoryService.GetByName(model);
+            if (!result.Success)
             {
-                ViewBag.UpdateCategoryError = validationResult.Errors.FirstOrDefault();
-                CategoryDto? category = await _categoryService.Get(model.Id);
-                return View(category);
+                ViewBag.AuthError = "Category exists.";
+                return View(model);
             }
-            if (await _categoryService.IsNameCategoryInAllCategories(model.Name))
+            CreateCategoryValidation validator = new CreateCategoryValidation();
+            var validationResult = await validator.ValidateAsync(model);
+            if (validationResult.IsValid)
             {
-                ViewBag.UpdateCategoryError = $"category named {model.Name} already exists";
-                CategoryDto? category = await _categoryService.Get(model.Id);
-                return View(category);
+                await _categoryService.Update(model);
+                return RedirectToAction(nameof(Index));
             }
-            await _categoryService.Update(model);
-            return RedirectToAction(nameof(GetAll));
+            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+            return View(model);
         }
         #endregion
 
         #region Delete
         public async Task<IActionResult> Delete(int id)
         {
-            CategoryDto? category = await _categoryService.Get(id);
-            if (category == null) 
-            { 
-                return RedirectToAction(nameof(GetAll));
+            CategoryDto? categoryDto = await _categoryService.Get(id);
+
+            if (categoryDto == null)
+            {
+                ViewBag.AuthError = "Category not found.";
+                return View();
             }
-            return View(category);
+
+            List<PostDto> posts = await _postService.GetByCategory(id);
+            ViewBag.CategoryName = categoryDto.Name;
+            ViewBag.CategoryId = categoryDto.Id;
+
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("Delete", posts.ToPagedList(pageNumber, pageSize));
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(CategoryDto model)
+        public async Task<IActionResult> DeleteById(int Id)
         {
-            await _categoryService.Delete(model.Id);
+            await _categoryService.Delete(Id);
             return RedirectToAction(nameof(GetAll));
         }
         #endregion

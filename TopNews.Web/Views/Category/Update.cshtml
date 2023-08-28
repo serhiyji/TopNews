@@ -1,34 +1,83 @@
 ﻿@using TopNews.Core.DTOs.Category;
-@model CategoryDto;
+@model CategoryDto
+
 @{
+    ViewData["Title"] = "Categories";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
-<section class="min-vh-100 mb-8">
-    <div class="container">
-        <div class="row">
-            <div class="col-xl-4 col-lg-5 col-md-7 mx-auto">
-                <div class="card z-index-0">
-                    <div class="text-center pt-4">
-                        <h5>Edit category information</h5>
-                    </div>
-                    <div class="card-body">
-                        <form role="form text-left" method="post" asp-controller="Category" asp-action="Update">
-                            @if (@ViewBag.UpdateCategoryError != null)
-                            {
-                                <span class="text-danger">@ViewBag.UpdateCategoryError</span>
-                            }
-                            <div class="mb-3">
-                                <label>New name category</label>
-                                <input asp-for="Id" type="hidden" class="form-control" aria-label="Id" aria-describedby="email-addon" />
-                                <input asp-for="Name" type="text" class="form-control" placeholder="New name category" aria-label="New name category" value="@Model.Name">
-                            </div>
-                            <div class="text-center">
-                                <button type="submit" class="btn bg-gradient-dark w-100 my-4 mb-2">Save</button>
-                            </div>
-                        </form>
-                    </div>
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Category managament</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a asp-action="Index">Home</a></li>
+                        <li class="breadcrumb-item active">Edit category</li>
+                    </ol>
                 </div>
             </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- SELECT2 EXAMPLE -->
+            <div class="card card-default">
+                <div class="card-header">
+                    <h3 class="card-title">Update category</h3>
+
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-tool" data-card-widget="remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-5 offset-3">
+                            <div class="card card-warning">
+                                <div class="card-header">
+                                    <h3 class="card-title">Update category</h3>
+                                </div>
+                                <!-- /.card-header -->
+                                <!-- form start -->
+                                @if (@ViewBag.AuthError != null)
+                                {
+                                    <span class="text-danger mt-3">@ViewBag.AuthError</span>
+                                }
+                                <form method="post" asp-controller="Category" asp-action="Update">
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <label>Category</label>
+                                            <input type="text" asp-for="Name" name="name" class="form-control" placeholder="Category name">
+                                            <span class="text-danger" asp-validation-for="Name"></span>
+                                        </div>
+                                    </div>
+                                    <!-- /.card-body -->
+                                    <div class="card-footer">
+                                        <button type="submit" class="btn btn-warning">Update</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+            <!-- /.row -->
         </div>
-    </div>
-</section>
+        <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>

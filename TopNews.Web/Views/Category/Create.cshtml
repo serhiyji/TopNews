@@ -1,8 +1,11 @@
-﻿﻿@using TopNews.Core.DTOs.Category;
-@model CategoryDto;
+﻿@using TopNews.Core.DTOs.Category;
+@model CategoryDto
+
 @{
+    ViewData["Title"] = "Categories";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -45,19 +48,19 @@
                         <div class="col-md-5 offset-3">
                             <div class="card card-primary">
                                 <div class="card-header">
-                                    <h3 class="card-title">New user</h3>
+                                    <h3 class="card-title">New category</h3>
                                 </div>
                                 <!-- /.card-header -->
                                 <!-- form start -->
-                                @if (@ViewBag.CreateCategoryError != null)
+                                @if (@ViewBag.AuthError != null)
                                 {
-                                    <span class="text-danger mt-3">@ViewBag.CreateUserError</span>
+                                    <span class="text-danger mt-3">@ViewBag.AuthError</span>
                                 }
                                 <form method="post" asp-controller="Category" asp-action="Create">
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label for="exampleInputEmail1">Name category</label>
-                                            <input type="text" name="Name" class="form-control" id="exampleInputEmail1" placeholder="Enter First Name">
+                                            <label>Category</label>
+                                            <input type="text" name="name" class="form-control" placeholder="Category name">
                                         </div>
                                     </div>
                                     <!-- /.card-body -->

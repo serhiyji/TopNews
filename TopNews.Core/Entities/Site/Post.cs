@@ -16,6 +16,6 @@ namespace TopNews.Core.Entities.Site
         public DateTime PublicationDateTime { get; set; }
         public int IdCategory { get; set; }
         public Category Category { get; set; }
-        public string NameImage { get; set; }
+        public string NameImage { get; set; } = "Default.png";
     }
 }

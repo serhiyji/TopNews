@@ -9,6 +9,7 @@ using TopNews.Core.Interfaces;
 using TopNews.Core.Entities.Site;
 using TopNews.Core.DTOs.Category;
 using Microsoft.Extensions.Hosting;
+using TopNews.Core.Entities.Specifications;
 
 namespace TopNews.Core.Services
 {
@@ -33,6 +34,12 @@ namespace TopNews.Core.Services
             if (model == null) return;
             await _postRepo.Delete(id);
             await _postRepo.Save();
+        }
+
+        public async Task<List<PostDto>> GetByCategory(int id)
+        {
+            var result = await _postRepo.GetListBySpec(new Posts.ByCategory(id));
+            return _mapper.Map<List<PostDto>>(result);
         }
 
         public async Task<PostDto?> Get(int id)
