@@ -2,8 +2,13 @@
 @using TopNews.Core.DTOs.Post;
 @using TopNews.Core.DTOs.User;
 @using TopNews.Core.Entities.User;
-@model List<PostDto>
+
 @inject UserManager<AppUser> UserManager
+
+@using X.PagedList.Mvc.Core;
+@using X.PagedList.Web.Common;
+@using X.PagedList;
+@model IPagedList<PostDto>
 
 @{
     var user = await UserManager.GetUserAsync(User);
@@ -79,6 +84,20 @@
                                             }
                                         </tr>
                                     }
+                                    <div class="dataTables_paginate paging_simple_numbers" id="example2_paginate">
+                                        @Html.PagedListPager(Model, page => Url.Action("index", new { page = page }), new PagedListRenderOptions()
+                                        {
+                                        ActiveLiElementClass = "active",
+                                        PageClasses = new[]{ "page-link"},
+                                        LiElementClasses=new[] { "page-item" },
+                                        UlElementClasses = new[] { "pagination","justify-content-center", "mt-3" },
+                                        LinkToNextPageFormat = "Next",
+                                        LinkToPreviousPageFormat = "Prev",
+                                        MaximumPageNumbersToDisplay = 3,
+                                        DisplayLinkToPreviousPage = PagedListDisplayMode.Never,
+                                        DisplayLinkToNextPage = PagedListDisplayMode.Never
+                                        })
+                                    </div>
                                 </tbody>
                             </table>
                         </div>

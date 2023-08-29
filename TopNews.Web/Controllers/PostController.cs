@@ -8,6 +8,7 @@ using TopNews.Core.Interfaces;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.Category;
 using TopNews.Core.Validation.Post;
+using X.PagedList;
 
 namespace TopNews.Web.Controllers
 {
@@ -28,7 +29,9 @@ namespace TopNews.Web.Controllers
         public async Task<IActionResult> GetAll()
         {
             List<PostDto> posts = await _postService.GetAll();
-            return View(posts);
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("GetAll", posts.ToPagedList(pageNumber, pageSize));
         }
         #endregion
 
