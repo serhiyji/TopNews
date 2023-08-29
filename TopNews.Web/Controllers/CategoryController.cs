@@ -96,7 +96,7 @@ namespace TopNews.Web.Controllers
             if (validationResult.IsValid)
             {
                 await _categoryService.Update(model);
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(GetAll));
             }
             ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
             return View(model);
@@ -116,7 +116,7 @@ namespace TopNews.Web.Controllers
 
             List<PostDto> posts = await _postService.GetByCategory(id);
             ViewBag.CategoryName = categoryDto.Name;
-            ViewBag.CategoryId = categoryDto.Id;
+            ViewBag.IdCategory = categoryDto.Id;
 
             int pageSize = 20;
             int pageNumber = 1;
