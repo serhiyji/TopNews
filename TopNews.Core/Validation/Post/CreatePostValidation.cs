@@ -14,7 +14,8 @@ namespace TopNews.Core.Validation.Post
         {
             RuleFor(p => p.Title).NotEmpty().WithMessage("Title must not be empty");
             RuleFor(p => p.Description).NotEmpty().WithMessage("Description must not be empty");
-            RuleFor(p => p.Text).NotEmpty().WithMessage("Text must not be empty");
+            RuleFor(p => p.FullText).NotEmpty().WithMessage("Text must not be empty");
+            RuleFor(p => p.CategoryId).NotEmpty().WithMessage("Category must not be empty");
         }
     }
 }

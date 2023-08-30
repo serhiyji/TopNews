@@ -17,7 +17,7 @@ namespace TopNews.Core.Entities.Specifications
             {
                 Query
                   .Include(x => x.Category)
-                  .Where(c => c.IdCategory == categoryId).OrderByDescending(x => x.Id); ;
+                  .Where(c => c.CategoryId == categoryId).OrderByDescending(x => x.Id); ;
             }
         }
     }

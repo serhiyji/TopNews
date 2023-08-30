@@ -31,7 +31,6 @@ namespace TopNews.Infrastructure.Context
             modelBuilder.SeedCategories();
             modelBuilder.SeedPosts();
 
-            modelBuilder.Entity<Category>().HasMany<Post>(c => c.Posts).WithOne(c => c.Category).HasForeignKey(p => p.IdCategory);
         }
     }
 }

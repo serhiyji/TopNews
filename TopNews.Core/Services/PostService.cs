@@ -10,6 +10,9 @@ using TopNews.Core.Entities.Site;
 using TopNews.Core.DTOs.Category;
 using Microsoft.Extensions.Hosting;
 using TopNews.Core.Entities.Specifications;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace TopNews.Core.Services
 {
@@ -17,15 +20,42 @@ namespace TopNews.Core.Services
     {
         private readonly IMapper _mapper;
         private readonly IRepository<Post> _postRepo;
-        public PostService(IMapper mapper, IRepository<Post> postRepo)
+        private readonly IRepository<Category> _categoryRepo;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public PostService(IMapper mapper, IRepository<Post> postRepo,  IConfiguration configuration, IWebHostEnvironment webHostEnvironment, IRepository<Category> categoryRepo)
         {
             _mapper = mapper;
             _postRepo = postRepo;
+            _configuration = configuration;
+            _webHostEnvironment = webHostEnvironment;
+            _categoryRepo = categoryRepo;
         }
         public async Task Create(PostDto model)
         {
-            var newPost = _mapper.Map<Post>(model);
-            await _postRepo.Insert(newPost);
+            if (model.File.Count > 0)
+            {
+                string webRootPath = _webHostEnvironment.WebRootPath;
+                string upload = webRootPath + _configuration.GetValue<string>("ImageSettings:ImagePath");
+                var files = model.File;
+                var fileName = Guid.NewGuid().ToString();
+                string extansions = Path.GetExtension(files[0].FileName);
+                using (var fileStream = new FileStream(Path.Combine(upload, fileName + extansions), FileMode.Create))
+                {
+                    files[0].CopyTo(fileStream);
+                }
+
+                model.ImagePath = fileName + extansions;
+            }
+            else
+            {
+                model.ImagePath = "Default.png";
+            }
+
+            DateTime currentDate = DateTime.Today;
+            string formatedDate = currentDate.ToString("d");
+            model.PublishDate = formatedDate;
+            await _postRepo.Insert(_mapper.Map<Post>(model));
             await _postRepo.Save();
         }
 

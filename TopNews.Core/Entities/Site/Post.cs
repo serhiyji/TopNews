@@ -10,12 +10,12 @@ namespace TopNews.Core.Entities.Site
     public class Post : IEntity
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Text { get; set; }
-        public DateTime PublicationDateTime { get; set; }
-        public int IdCategory { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string FullText { get; set; } = string.Empty;
+        public string PublishDate { get; set; } = string.Empty;
+        public string? ImagePath { get; set; } = "Default.png";
+        public int CategoryId { get; set; }
         public Category Category { get; set; }
-        public string NameImage { get; set; } = "Default.png";
     }
 }

@@ -10,10 +10,10 @@ namespace TopNews.Core.DTOs.Post
     public class PostDto
     {
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Text { get; set; }
-        public string PublicationDateTime { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string FullText { get; set; } = string.Empty;
+        public string PublishDate { get; set; } = string.Empty;
         private string? _imagePath;
         public string? ImagePath
         {
@@ -21,8 +21,8 @@ namespace TopNews.Core.DTOs.Post
             set => _imagePath = value ?? defaultPath;
         }
         const string defaultPath = "Default.png";
-        public int IdCategory { get; set; }
-        public string CategoryName { get; set; }
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; } = string.Empty;
         public IFormFileCollection File { get; set; }
         public string Slug => Title?
             .Replace("а", "a")
@@ -60,5 +60,6 @@ namespace TopNews.Core.DTOs.Post
             .Replace("я", "ya")
             .Replace(":", "-")
             .Replace(" ", "-").ToLower().ToString() + ".html";
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TopNews.Core.DTOs.Category;
@@ -12,6 +13,7 @@ using X.PagedList;
 
 namespace TopNews.Web.Controllers
 {
+    [Authorize]
     public class PostController : Controller
     {
         private readonly IPostService _postService;
@@ -26,6 +28,7 @@ namespace TopNews.Web.Controllers
             return RedirectToAction("Index", "Dashboard");
         }
         #region Get All page
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             List<PostDto> posts = await _postService.GetAll();
@@ -36,6 +39,7 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Create page
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create()
         {
             await LoadCategories();
@@ -43,16 +47,20 @@ namespace TopNews.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(PostDto model)
         {
-            var validationResult = await new CreatePostValidation().ValidateAsync(model);
-            if (!validationResult.IsValid)
+            var validator = new CreatePostValidation();
+            var validationResult = await validator.ValidateAsync(model);
+            if (validationResult.IsValid)
             {
-                ViewBag.CreatePostError = validationResult.Errors.FirstOrDefault();
-                return View();
+                var files = HttpContext.Request.Form.Files;
+                model.File = files;
+                await _postService.Create(model);
+                return RedirectToAction("Index", "Post");
             }
-            await _postService.Create(model);
-            return RedirectToAction(nameof(GetAll));
+            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+            return View();
         }
         #endregion
 
@@ -101,7 +109,7 @@ namespace TopNews.Web.Controllers
         {
             List<CategoryDto> result = await _categoryService.GetAll();
             @ViewBag.CategoriesList = new SelectList((System.Collections.IEnumerable)result,
-                nameof(IdentityRole.Name), nameof(IdentityRole.Name)
+                nameof(CategoryDto.Id), nameof(CategoryDto.Name)
               );
         }
     }
