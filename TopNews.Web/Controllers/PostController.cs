@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -31,7 +32,7 @@ namespace TopNews.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
-            List<PostDto> posts = await _postService.GetAll();
+            List<PostDto> posts = (await _postService.GetAll()).OrderByDescending(p => p.Id).ToList();
             int pageSize = 20;
             int pageNumber = 1;
             return View("GetAll", posts.ToPagedList(pageNumber, pageSize));
@@ -50,17 +51,17 @@ namespace TopNews.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Create(PostDto model)
         {
-            var validator = new CreatePostValidation();
-            var validationResult = await validator.ValidateAsync(model);
-            if (validationResult.IsValid)
+            CreatePostValidation validator = new CreatePostValidation();
+            ValidationResult validationResult = await validator.ValidateAsync(model);
+            if (!validationResult.IsValid)
             {
-                var files = HttpContext.Request.Form.Files;
-                model.File = files;
-                await _postService.Create(model);
-                return RedirectToAction("Index", "Post");
+                ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+                return View();
             }
-            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
-            return View();
+            IFormFileCollection files = HttpContext.Request.Form.Files;
+            model.File = files;
+            await _postService.Create(model);
+            return RedirectToAction(nameof(GetAll));
         }
         #endregion
 
@@ -74,7 +75,7 @@ namespace TopNews.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(PostDto model)
         {
-            var validationResult = await new CreatePostValidation().ValidateAsync(model);
+            ValidationResult validationResult = await new CreatePostValidation().ValidateAsync(model);
             if (!validationResult.IsValid)
             {
                 ViewBag.UpdatePostError = validationResult.Errors.FirstOrDefault();

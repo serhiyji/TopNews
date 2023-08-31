@@ -37,10 +37,10 @@ namespace TopNews.Core.Services
             {
                 string webRootPath = _webHostEnvironment.WebRootPath;
                 string upload = webRootPath + _configuration.GetValue<string>("ImageSettings:ImagePath");
-                var files = model.File;
-                var fileName = Guid.NewGuid().ToString();
+                IFormFileCollection files = model.File;
+                string fileName = Guid.NewGuid().ToString();
                 string extansions = Path.GetExtension(files[0].FileName);
-                using (var fileStream = new FileStream(Path.Combine(upload, fileName + extansions), FileMode.Create))
+                using (FileStream fileStream = new FileStream(Path.Combine(upload, fileName + extansions), FileMode.Create))
                 {
                     files[0].CopyTo(fileStream);
                 }
@@ -55,7 +55,9 @@ namespace TopNews.Core.Services
             DateTime currentDate = DateTime.Today;
             string formatedDate = currentDate.ToString("d");
             model.PublishDate = formatedDate;
-            await _postRepo.Insert(_mapper.Map<Post>(model));
+            Post newpost = _mapper.Map<Post>(model);
+            newpost.Category = null;
+            await _postRepo.Insert(newpost);
             await _postRepo.Save();
         }
 
@@ -69,7 +71,7 @@ namespace TopNews.Core.Services
 
         public async Task<List<PostDto>> GetByCategory(int id)
         {
-            var result = await _postRepo.GetListBySpec(new Posts.ByCategory(id));
+            IEnumerable<Post> result = await _postRepo.GetListBySpec(new Posts.ByCategory(id));
             return _mapper.Map<List<PostDto>>(result);
         }
 
@@ -83,7 +85,7 @@ namespace TopNews.Core.Services
 
         public async Task<List<PostDto>> GetAll()
         {
-            var result = await _postRepo.GetAll();
+            IEnumerable<Post> result = await _postRepo.GetAll();
             return _mapper.Map<List<PostDto>>(result);
         }
 
