@@ -1,9 +1,11 @@
 ﻿@using TopNews.Core.DTOs.Post;
-@model PostDto;
+@model PostDto
+
 @{
-    ViewData["Title"] = "Categories";
+    ViewData["Title"] = "Delete post";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -39,17 +41,12 @@
                         <!-- /.card-header -->
                         <div class="card-body">
                             <div class="callout callout-danger">
-                                @if (@ViewBag.DeletePostError != null)
+                                @if (@ViewBag.AuthError != null)
                                 {
-                                    <span class="text-danger">@ViewBag.DeletePostError</span>
+                                    <span class="text-danger">@ViewBag.AuthError</span>
                                 }
                                 <h5 class="mb-4">Do you really wants to delete post @Model.Title</h5>
-                                <form method="post" asp-controller="Post" asp-action="Delete">
-                                    <div class="card-footer">
-                                        <button type="submit" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</button>
-                                    </div>
-                                </form>
-
+                                <a asp-action="DeleteById" asp-controller="Post" asp-route-id="@Model.Id" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
                             </div>
                         </div>
                         <!-- /.card-body -->

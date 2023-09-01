@@ -30,11 +30,11 @@ namespace TopNews.Web.Controllers
         }
         #region Get All page
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll(int? page)
         {
             List<PostDto> posts = (await _postService.GetAll()).OrderByDescending(p => p.Id).ToList();
             int pageSize = 20;
-            int pageNumber = 1;
+            int pageNumber = (page ?? 1);
             return View("GetAll", posts.ToPagedList(pageNumber, pageSize));
         }
         #endregion
@@ -66,42 +66,49 @@ namespace TopNews.Web.Controllers
         #endregion
 
         #region Update page
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Update(int id)
         {
-            PostDto? postinfo = await _postService.Get(id);
-            return View(postinfo);
+            var posts = await _postService.Get(id);
+            if (posts == null) return NotFound();
+            await LoadCategories();
+            return View(posts);
         }
+
+        [Authorize(Roles = "Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update(PostDto model)
         {
-            ValidationResult validationResult = await new CreatePostValidation().ValidateAsync(model);
-            if (!validationResult.IsValid)
+            var validationResult = await new CreatePostValidation().ValidateAsync(model);
+            if (validationResult.IsValid)
             {
-                ViewBag.UpdatePostError = validationResult.Errors.FirstOrDefault();
-                PostDto? post = await _postService.Get(model.Id);
-                return View(post);
+                var files = HttpContext.Request.Form.Files;
+                model.File = files;
+                await _postService.Update(model);
+                return RedirectToAction(nameof(GetAll));
             }
-            await _postService.Update(model);
-            return RedirectToAction(nameof(GetAll));
+            ViewBag.CreatePostError = validationResult.Errors.FirstOrDefault();
+            return View(model);
         }
         #endregion
 
         #region Delete
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
-            PostDto? post = await _postService.Get(id);
-            if (post == null)
+            PostDto? postDto = await _postService.Get(id);
+            if (postDto == null)
             {
-                return RedirectToAction(nameof(GetAll));
+                ViewBag.AuthError = "Post not found.";
+                return View();
             }
-            return View(post);
+            return View(postDto);
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(PostDto model)
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> DeleteById(int id)
         {
-            await _postService.Delete(model.Id);
+            await _postService.Delete(id);
             return RedirectToAction(nameof(GetAll));
         }
         #endregion
@@ -109,9 +116,28 @@ namespace TopNews.Web.Controllers
         private async Task LoadCategories()
         {
             List<CategoryDto> result = await _categoryService.GetAll();
-            @ViewBag.CategoriesList = new SelectList((System.Collections.IEnumerable)result,
+            @ViewBag.CategoryList = new SelectList((System.Collections.IEnumerable)result,
                 nameof(CategoryDto.Id), nameof(CategoryDto.Name)
               );
+        }
+
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> PostsByCategory(int id)
+        {
+            List<PostDto> posts = await _postService.GetByCategory(id);
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("GetAll", posts.ToPagedList(pageNumber, pageSize));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Search([FromForm] string searchString)
+        {
+            List<PostDto> posts = await _postService.Search(searchString);
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("GetAll", posts.ToPagedList(pageNumber, pageSize));
         }
     }
 }
