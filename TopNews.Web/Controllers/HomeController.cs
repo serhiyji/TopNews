@@ -16,6 +16,7 @@ namespace TopNews.Web.Controllers
             _categoryService = categoryService;
             _postService = postService;
         }
+
         public async Task<IActionResult> Index(int? page)
         {
             List<PostDto> posts = (await _postService.GetAll()).OrderByDescending(p => p.Id).ToList();
@@ -24,6 +25,17 @@ namespace TopNews.Web.Controllers
             return View("Index", posts.ToPagedList(pageNumber, pageSize));
         }
         
+        public async Task<IActionResult> PostPage(int? id)
+        {
+            PostDto? post = await _postService.Get(id ?? 0);
+            if (post == null)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+            post.CategoryName = (await _categoryService.Get(post.CategoryId)).Name;
+            return View(post);
+        }
+
         [Route("Error/{statusCode}")]
         public IActionResult Error(int statusCode)
         {

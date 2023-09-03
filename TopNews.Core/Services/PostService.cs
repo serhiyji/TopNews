@@ -101,14 +101,11 @@ namespace TopNews.Core.Services
             return _mapper.Map<List<PostDto>>(result);
         }
 
-        public async Task<PostDto> GetById(int id)
+        public async Task<PostDto?> GetById(int id)
         {
-            if (id < 0) return null; // exception handling
-
+            if (id < 0) return null;
             var post = await _postRepo.GetByID(id);
-
-            if (post == null) return null; // exception handling
-
+            if (post == null) return null;
             return _mapper.Map<PostDto>(post);
         }
 

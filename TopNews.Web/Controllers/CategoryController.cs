@@ -32,7 +32,7 @@ namespace TopNews.Web.Controllers
 
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Dashboard");
+            return RedirectToAction(nameof(GetAll));
         }
 
         #region Get All page

@@ -28,9 +28,11 @@
                         </div>
                         <div class="col-md-8">
                             <div class="card-body">
-                                <h5 class="card-title">@post.Title</h5>
-                                <p class="card-text">@post.PublishDate</p>
-                                <p class="card-text">@post.Description</p>
+                                <a asp-controller="Home" asp-action="PostPage" asp-route-id="@post.Id" class="link-dark">
+                                    <h5 class="card-title">@post.Title</h5>
+                                </a>
+                                <p>Publish Date : @post.PublishDate / Category : @post.CategoryName</p>
+                                <p class="mb-0">@Html.Raw(@post.Description)</p>
                             </div>
                         </div>
                     </div>

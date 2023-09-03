@@ -16,7 +16,7 @@ namespace TopNews.Core.Interfaces
         Task Create(PostDto model);
         Task Update(PostDto model);
         Task Delete(int id);
-        Task<PostDto> GetById(int id);
+        Task<PostDto?> GetById(int id);
         Task<List<PostDto>> Search(string searchString);
     }
 }
