@@ -1,14 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using TopNews.Core.DTOs.Post;
+using TopNews.Core.Interfaces;
 using TopNews.Web.Models;
+using X.PagedList;
 
 namespace TopNews.Web.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IPostService _postService;
+        private readonly ICategoryService _categoryService;
+        public HomeController(IPostService postService, ICategoryService categoryService)
         {
-            return View();
+            _categoryService = categoryService;
+            _postService = postService;
+        }
+        public async Task<IActionResult> Index(int? page)
+        {
+            List<PostDto> posts = (await _postService.GetAll()).OrderByDescending(p => p.Id).ToList();
+            int pageSize = 20;
+            int pageNumber = (page ?? 1);
+            return View("Index", posts.ToPagedList(pageNumber, pageSize));
         }
         
         [Route("Error/{statusCode}")]
