@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using TopNews.Core.DTOs.Post;
 using TopNews.Core.Interfaces;
@@ -24,7 +25,24 @@ namespace TopNews.Web.Controllers
             int pageNumber = (page ?? 1);
             return View("Index", posts.ToPagedList(pageNumber, pageSize));
         }
-        
+
+        public async Task<IActionResult> PostsByCategory(int id)
+        {
+            List<PostDto> posts = (await _postService.GetByCategory(id)).OrderByDescending(p => p.Id).ToList();
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("Index", posts.ToPagedList(pageNumber, pageSize));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Search([FromForm] string searchString)
+        {
+            List<PostDto> posts = (await _postService.Search(searchString)).OrderByDescending(p => p.Id).ToList();
+            int pageSize = 20;
+            int pageNumber = 1;
+            return View("Index", posts.ToPagedList(pageNumber, pageSize));
+        }
+
         public async Task<IActionResult> PostPage(int? id)
         {
             PostDto? post = await _postService.Get(id ?? 0);

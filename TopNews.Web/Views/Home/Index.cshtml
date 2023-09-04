@@ -11,6 +11,20 @@
 <div class="container mt-5">
     <h1 class="text-center">Новини</h1>
     <div class="row">
+        <div class="col-md-8 mb-4 offset-md-2">
+            <form method="post" asp-action="Search" asp-controller="Home">
+                <div class="input-group input-group-lg">
+                    <input type="search" name="searchString" class="form-control form-control-lg" placeholder="Search...">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-lg btn-default">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
         @foreach (var post in Model)
         {
             <div class="col-md-6">
@@ -31,7 +45,8 @@
                                 <a asp-controller="Home" asp-action="PostPage" asp-route-id="@post.Id" class="link-dark">
                                     <h5 class="card-title">@post.Title</h5>
                                 </a>
-                                <p>Publish Date : @post.PublishDate / Category : @post.CategoryName</p>
+                                <p>Publish Date : @post.PublishDate / Category : <a asp-controller="Home" asp-action="PostsByCategory" asp-route-id="@post.CategoryId" class="link-dark">@post.CategoryName</a></p>
+                                
                                 <p class="mb-0">@Html.Raw(@post.Description)</p>
                             </div>
                         </div>
