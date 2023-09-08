@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TopNews.Core.Entities;
 using TopNews.Core.Entities.Site;
 using TopNews.Core.Entities.User;
 using TopNews.Infrastructure.Initializers;
@@ -24,12 +25,14 @@ namespace TopNews.Infrastructure.Context
         public DbSet<AppUser> AppUser { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Post> Posts { get; set; }
+        public DbSet<DashdoardAccess> DashdoardAccesses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.SeedCategories();
             modelBuilder.SeedPosts();
+            modelBuilder.SeedDashdoardAccesses();
 
         }
     }

@@ -29,6 +29,8 @@ namespace TopNews.Web.Controllers
         [AllowAnonymous]
         public IActionResult SignIn()
         {
+            string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
             bool userAuthenticated = HttpContext.User.Identity.IsAuthenticated;
             if (userAuthenticated)
             {
@@ -54,7 +56,7 @@ namespace TopNews.Web.Controllers
                 ViewBag.AuthError = result.Message;
                 return View(model);
             }
-            ViewBag.AuthError = valationReslt.Errors[0];
+            ViewBag.AuthError = valationReslt.Errors.FirstOrDefault();
             return View(model); 
         }
         #endregion
