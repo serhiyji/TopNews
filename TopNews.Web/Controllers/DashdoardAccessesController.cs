@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TopNews.Core.DTOs.Category;
 using TopNews.Core.DTOs.Ip;
 using TopNews.Core.DTOs.Post;
@@ -6,6 +7,7 @@ using TopNews.Core.Interfaces;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.Category;
 using TopNews.Core.Validation.Id;
+using TopNews.Core.Validation.Post;
 using X.PagedList;
 
 namespace TopNews.Web.Controllers
@@ -43,12 +45,12 @@ namespace TopNews.Web.Controllers
             if (validationResult.IsValid)
             {
                 DashdoardAccessDto? result = await _ipService.Get(model.IpAddress);
-                if (result == null)
+                if (result != null)
                 {
                     ViewBag.AuthError = "DashdoardAccesses exists.";
                     return View(model);
                 }
-                _ipService.Create(model);
+                await _ipService.Create(model);
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
@@ -56,22 +58,47 @@ namespace TopNews.Web.Controllers
         }
         #endregion
 
+        #region Update page
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> Update(int id)
+        {
+            var ip = await _ipService.Get(id);
+            if (ip == null) return NotFound();
+            return View(ip);
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(DashdoardAccessDto model)
+        {
+            var validationResult = await new CreateDashdoardAccessesValidation().ValidateAsync(model);
+            if (validationResult.IsValid)
+            {
+                await _ipService.Update(model);
+                return RedirectToAction(nameof(GetAll));
+            }
+            ViewBag.AuthError = validationResult.Errors.FirstOrDefault();
+            return View(model);
+        }
+        #endregion
+
         #region Delete
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
             DashdoardAccessDto? model = await _ipService.Get(id);
             if (model == null)
             {
-                ViewBag.AuthError = "Category not found.";
+                ViewBag.AuthError = "IP not found.";
                 return RedirectToAction(nameof(GetAll));
             }
             return View(model);
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> DeleteById(int Id)
         {
-            _ipService.Delete(Id);
+            await _ipService.Delete(Id);
             return RedirectToAction(nameof(GetAll));
         }
         #endregion

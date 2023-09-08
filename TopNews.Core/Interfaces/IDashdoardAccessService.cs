@@ -13,8 +13,9 @@ namespace TopNews.Core.Interfaces
     public interface IDashdoardAccessService
     {
         Task<List<DashdoardAccessDto>> GetAll();
-        void Create(DashdoardAccessDto model);
-        void Delete(int id);
+        Task Create(DashdoardAccessDto model);
+        Task Update(DashdoardAccessDto model);
+        Task Delete(int id);
         Task<DashdoardAccessDto?> Get(string IpAddress);
         Task<DashdoardAccessDto?> Get(int id);
     }

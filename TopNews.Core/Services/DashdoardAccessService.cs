@@ -22,14 +22,22 @@ namespace TopNews.Core.Services
             _mapper = mapper;
         }
 
-        public async void Create(DashdoardAccessDto model)
+        public async Task Create(DashdoardAccessDto model)
         {
             await _ipRepo.Insert(_mapper.Map<DashdoardAccess>(model));
+            await _ipRepo.Save();
         }
 
-        public async void Delete(int id)
+        public async Task Update(DashdoardAccessDto model)
+        {
+            await _ipRepo.Update(_mapper.Map<DashdoardAccess>(model));
+            await _ipRepo.Save();
+        }
+
+        public async Task Delete(int id)
         {
             await _ipRepo.Delete(id);
+            await _ipRepo.Save();
         }
 
         public async Task<DashdoardAccessDto?> Get(string IpAddress)
@@ -44,7 +52,7 @@ namespace TopNews.Core.Services
 
         public async Task<List<DashdoardAccessDto>> GetAll()
         {
-            return _mapper.Map<List<DashdoardAccessDto>>(_ipRepo.GetAll());
+            return _mapper.Map<List<DashdoardAccessDto>>(await _ipRepo.GetAll());
         }
     }
 }
