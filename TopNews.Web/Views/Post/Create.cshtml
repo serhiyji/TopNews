@@ -1,10 +1,11 @@
-﻿﻿﻿@using TopNews.Core.DTOs.Post;
+﻿﻿@using TopNews.Core.DTOs.Post;
 @model PostDto;
 
 @{
     ViewData["Title"] = "Posts";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
     <link rel="stylesheet" href="~/dashboard/plugins/summernote/summernote-bs4.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
 }
 
 <!-- Content Wrapper. Contains page content -->
@@ -56,7 +57,7 @@
                                     <span class="text-danger mt-3">@ViewBag.AuthError</span>
                                 }
 
-                                <form method="post" asp-action="Create" enctype="multipart/form-data">
+                                <form method="post" asp-controller="Post" asp-action="AddPost" enctype="multipart/form-data">
                                     <div class="card-body">
                                         <div class="form-group">
                                             <label>Title</label>
@@ -75,25 +76,25 @@
                                             <select asp-for="CategoryId" asp-items="ViewBag.CategoryList" class="custom-select form-control-border"></select>
                                         </div>
                                         <div class="form-group">
-                                            <label>Cropped Image</label>
-                                            <div class="input-group">
+                                            <label>Image</label>
+                                            <div class=" input-group">
                                                 <div class="custom-file">
-                                                    <input type="file" name="File" id="imageInput" asp-for="@Model.File" class="custom-file-input" />
-                                                    <label class="custom-file-label">Choose file...</label>
+                                                    <div class="custom-file">
+                                                        <input type="file" id="Image" name="files" asp-for="@Model.File" class="custom-file-input" />
+                                                        <label class="custom-file-label">Choose file...</label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="form-group">
-                                            <label>Image Preview</label>
-                                            <div id="imageContainer" style="max-width: 100%; max-height: 500px; overflow: hidden;">
-                                                <img src="" id="imagePreview" style="max-width: 100%;" />
-                                            </div>
+                                            <label>Cropped Image</label>
+                                            <div id="croppedImage"></div>
                                         </div>
-
+                                        <div class="form-group">
+                                            <button type="button" id="cropButton" class="btn btn-primary">Crop Image</button>
+                                        </div>
                                         <div class="card-footer">
                                             <button type="submit" class="btn btn-primary">Create</button>
-
                                         </div>
                                     </div>
                                 </form>
@@ -112,59 +113,104 @@
 
 @section Scripts{
     <script src="~/dashboard/plugins/summernote/summernote-bs5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" />
     <script>
         $(function () {
             $('#summernote').summernote({
                 minHeight: 200
-            });
+            })
 
             $('#text').summernote({
                 minHeight: 200
-            });
+            })
+        })
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+    <script>
+        $(function () {
+            var $imageInput = $('#Image');
+            var $croppedImage = $('#croppedImage');
+            var $cropper;
 
-            var image = document.getElementById('imagePreview');
-            var cropper;
+            // Зберігаємо обрізане зображення на клієнті
+            var croppedImageData = null;
 
-            $('#imageInput').change(function (e) {
-                var files = e.target.files;
-                var file = files[0];
+            // Ініціалізуємо Croppie при виборі файлу
+            $imageInput.on('change', function () {
+                var files = this.files;
+                var file;
 
-                if (file) {
-                    var reader = new FileReader();
+                if (files && files.length) {
+                    file = files[0];
 
-                    reader.onload = function (e) {
-                        image.src = e.target.result;
+                    if (/^image\/\w+$/.test(file.type)) {
+                        if ($cropper) {
+                            $cropper.destroy();
+                        }
 
-                        cropper = new Cropper(image, {
-                            aspectRatio: 16 / 9,
-                            viewMode: 0,
-                            cropBoxResizable: true,
-                            dragMode: 'move',
-                            autoCrop: true,
-                            autoCropArea: 1,
-                            checkCrossOrigin: true
+                        $croppedImage.empty();
+
+                        $cropper = new Croppie($croppedImage[0], {
+                            viewport: { width: 200, height: 200 },
+                            boundary: { width: 300, height: 300 },
+                            aspectRatio: 1,
+                            viewMode: 2,
+                            responsive: true,
+                            crop: function (event) {
+                                // Під час обрізки зберігаємо обрізане зображення на клієнті
+                                $cropper.result('base64').then(function (base64) {
+                                    croppedImageData = base64;
+                                });
+                            }
                         });
-                    };
 
-                    reader.readAsDataURL(file);
+                        var reader = new FileReader();
+
+                        reader.onload = function (e) {
+                            $cropper.bind({
+                                url: e.target.result
+                            });
+                        };
+
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert('Будь ласка, виберіть зображення.');
+                    }
                 }
             });
 
-            function dataURLtoBlob(dataURL) {
-                var parts = dataURL.split(';base64,');
-                var contentType = parts[0].split(':')[1];
-                var raw = window.atob(parts[1]);
-                var rawLength = raw.length;
-                var uInt8Array = new Uint8Array(rawLength);
+            $('#cropButton').on('click', function () {
+                if ($cropper) {
+                    // Очікуємо завершення операції і виводимо дані тільки після цього
+                    $cropper.result('base64').then(function (base64) {
+                        croppedImageData = base64;
 
-                for (var i = 0; i < rawLength; ++i) {
-                    uInt8Array[i] = raw.charCodeAt(i);
+                        // Створюємо новий об'єкт DataTransfer
+                        let dataTransfer = new DataTransfer();
+
+                        // Створюємо новий Blob з даними з Croppie (виправте тип та розширення, якщо потрібно)
+                        let blob = dataURItoBlob(croppedImageData);
+
+                        console.log(blob);
+
+                        // Створюємо новий файл і додаємо його до DataTransfer
+                        let file = new File([blob], "filename.png", { type: 'image/png' }); // Встановіть правильний тип і розширення файлу
+                        dataTransfer.items.add(file);
+
+                        // Оновлюємо FileList в інпуті
+                        var inputElement = document.getElementById('Image'); // Замініть 'Image' на id вашого інпуту
+                        inputElement.files = dataTransfer.files;
+                    });
                 }
-
-                return new Blob([uInt8Array], { type: contentType });
+            });
+            function dataURItoBlob(dataURI) {
+                var byteString = atob(dataURI.split(',')[1]);
+                var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                return new Blob([ab], { type: mimeString });
             }
         });
     </script>
