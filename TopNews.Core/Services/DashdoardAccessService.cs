@@ -12,25 +12,25 @@ using TopNews.Core.Interfaces;
 
 namespace TopNews.Core.Services
 {
-    internal class DashdoardAccessService : IDashdoardAccessService
+    internal class DashdoardAccessService : INetworkAddressService
     {
-        private readonly IRepository<DashdoardAccess> _ipRepo;
+        private readonly IRepository<NetworkAddress> _ipRepo;
         private readonly IMapper _mapper;
-        public DashdoardAccessService(IRepository<DashdoardAccess> ipRepo, IMapper mapper)
+        public DashdoardAccessService(IRepository<NetworkAddress> ipRepo, IMapper mapper)
         {
             _ipRepo = ipRepo;
             _mapper = mapper;
         }
 
-        public async Task Create(DashdoardAccessDto model)
+        public async Task Create(NetworkAddressDto model)
         {
-            await _ipRepo.Insert(_mapper.Map<DashdoardAccess>(model));
+            await _ipRepo.Insert(_mapper.Map<NetworkAddress>(model));
             await _ipRepo.Save();
         }
 
-        public async Task Update(DashdoardAccessDto model)
+        public async Task Update(NetworkAddressDto model)
         {
-            await _ipRepo.Update(_mapper.Map<DashdoardAccess>(model));
+            await _ipRepo.Update(_mapper.Map<NetworkAddress>(model));
             await _ipRepo.Save();
         }
 
@@ -40,19 +40,19 @@ namespace TopNews.Core.Services
             await _ipRepo.Save();
         }
 
-        public async Task<DashdoardAccessDto?> Get(string IpAddress)
+        public async Task<NetworkAddressDto?> Get(string IpAddress)
         {
-            return _mapper.Map<DashdoardAccessDto>(await _ipRepo.GetItemBySpec(new DashdoardAccesSpacification.GetByIpAddress(IpAddress)));
+            return _mapper.Map<NetworkAddressDto>(await _ipRepo.GetItemBySpec(new DashdoardAccesSpacification.GetByIpAddress(IpAddress)));
         }
 
-        public async Task<DashdoardAccessDto?> Get(int id)
+        public async Task<NetworkAddressDto?> Get(int id)
         {
-            return _mapper.Map<DashdoardAccessDto>(await _ipRepo.GetByID(id));
+            return _mapper.Map<NetworkAddressDto>(await _ipRepo.GetByID(id));
         }
 
-        public async Task<List<DashdoardAccessDto>> GetAll()
+        public async Task<List<NetworkAddressDto>> GetAll()
         {
-            return _mapper.Map<List<DashdoardAccessDto>>(await _ipRepo.GetAll());
+            return _mapper.Map<List<NetworkAddressDto>>(await _ipRepo.GetAll());
         }
     }
 }

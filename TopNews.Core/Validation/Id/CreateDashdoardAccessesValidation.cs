@@ -9,7 +9,7 @@ using TopNews.Core.Entities;
 
 namespace TopNews.Core.Validation.Id
 {
-    public class CreateDashdoardAccessesValidation : AbstractValidator<DashdoardAccessDto>
+    public class CreateDashdoardAccessesValidation : AbstractValidator<NetworkAddressDto>
     {
         public CreateDashdoardAccessesValidation()
         {

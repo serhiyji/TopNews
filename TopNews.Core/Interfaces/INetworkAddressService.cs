@@ -10,13 +10,13 @@ using TopNews.Core.Services;
 
 namespace TopNews.Core.Interfaces
 {
-    public interface IDashdoardAccessService
+    public interface INetworkAddressService
     {
-        Task<List<DashdoardAccessDto>> GetAll();
-        Task Create(DashdoardAccessDto model);
-        Task Update(DashdoardAccessDto model);
+        Task<List<NetworkAddressDto>> GetAll();
+        Task Create(NetworkAddressDto model);
+        Task Update(NetworkAddressDto model);
         Task Delete(int id);
-        Task<DashdoardAccessDto?> Get(string IpAddress);
-        Task<DashdoardAccessDto?> Get(int id);
+        Task<NetworkAddressDto?> Get(string IpAddress);
+        Task<NetworkAddressDto?> Get(int id);
     }
 }

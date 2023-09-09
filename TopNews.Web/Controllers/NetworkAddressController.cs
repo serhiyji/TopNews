@@ -12,12 +12,12 @@ using X.PagedList;
 
 namespace TopNews.Web.Controllers
 {
-    public class DashdoardAccessesController : Controller
+    public class NetworkAddressController : Controller
     {
-        private readonly IDashdoardAccessService _ipService;
-        public DashdoardAccessesController(IDashdoardAccessService dashdoardAccessService)
+        private readonly INetworkAddressService _ipService;
+        public NetworkAddressController(INetworkAddressService ipService)
         {
-            _ipService = dashdoardAccessService;
+            _ipService = ipService;
         }
         public IActionResult Index()
         {
@@ -27,7 +27,7 @@ namespace TopNews.Web.Controllers
         #region Get All page
         public async Task<IActionResult> GetAll()
         {
-            List<DashdoardAccessDto> ips = await _ipService.GetAll();
+            List<NetworkAddressDto> ips = await _ipService.GetAll();
             return View(ips);
         }
         #endregion
@@ -39,12 +39,12 @@ namespace TopNews.Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(DashdoardAccessDto model)
+        public async Task<IActionResult> Create(NetworkAddressDto model)
         {
             var validationResult = await new CreateDashdoardAccessesValidation().ValidateAsync(model);
             if (validationResult.IsValid)
             {
-                DashdoardAccessDto? result = await _ipService.Get(model.IpAddress);
+                NetworkAddressDto? result = await _ipService.Get(model.IpAddress);
                 if (result != null)
                 {
                     ViewBag.AuthError = "DashdoardAccesses exists.";
@@ -70,7 +70,7 @@ namespace TopNews.Web.Controllers
         [Authorize(Roles = "Administrator")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(DashdoardAccessDto model)
+        public async Task<IActionResult> Update(NetworkAddressDto model)
         {
             var validationResult = await new CreateDashdoardAccessesValidation().ValidateAsync(model);
             if (validationResult.IsValid)
@@ -87,7 +87,7 @@ namespace TopNews.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
-            DashdoardAccessDto? model = await _ipService.Get(id);
+            NetworkAddressDto? model = await _ipService.Get(id);
             if (model == null)
             {
                 ViewBag.AuthError = "IP not found.";

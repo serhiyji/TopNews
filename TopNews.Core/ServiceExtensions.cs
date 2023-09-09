@@ -21,7 +21,7 @@ namespace TopNews.Core
             services.AddTransient<EmailService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IPostService, PostService>();
-            services.AddScoped<IDashdoardAccessService, DashdoardAccessService>();
+            services.AddScoped<INetworkAddressService, DashdoardAccessService>();
         }
 
         public static void AddMapping(this IServiceCollection services) 

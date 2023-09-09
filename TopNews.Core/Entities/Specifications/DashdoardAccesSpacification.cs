@@ -10,7 +10,7 @@ namespace TopNews.Core.Entities.Specifications
 {
     internal class DashdoardAccesSpacification
     {
-        public class GetByIpAddress : Specification<DashdoardAccess>
+        public class GetByIpAddress : Specification<NetworkAddress>
         {
             public GetByIpAddress(string ipAdress)
             {

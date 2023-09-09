@@ -9,12 +9,12 @@ using TopNews.Core.Entities;
 
 namespace TopNews.Infrastructure.Initializers
 {
-    internal static class DashdoardAccessesInitializer
+    internal static class SeedNetworkAddressesInitializer
     {
-        public static void SeedDashdoardAccesses(this ModelBuilder model)
+        public static void SeedNetworkAddresses(this ModelBuilder model)
         {
-            model.Entity<DashdoardAccess>().HasData(
-                new DashdoardAccess()
+            model.Entity<NetworkAddress>().HasData(
+                new NetworkAddress()
                 {
                     Id = 1,
                     IpAddress = "0.0.0.0",

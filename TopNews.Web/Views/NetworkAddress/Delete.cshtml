@@ -1,5 +1,5 @@
 ﻿@using TopNews.Core.DTOs.Ip;
-@model DashdoardAccessDto
+@model NetworkAddressDto
 
 @{
     ViewData["Title"] = "Delete post";
@@ -46,7 +46,7 @@
                                     <span class="text-danger">@ViewBag.AuthError</span>
                                 }
                                 <h5 class="mb-4">Do you really wants to delete post @Model.IpAddress</h5>
-                                <a asp-action="DeleteById" asp-controller="DashdoardAccesses" asp-route-id="@Model.Id" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
+                                <a asp-action="DeleteById" asp-controller="NetworkAddress" asp-route-id="@Model.Id" style="width: 25%;" class="btn btn-block btn-danger btn-sm">Delete</a>
                             </div>
                         </div>
                         <!-- /.card-body -->

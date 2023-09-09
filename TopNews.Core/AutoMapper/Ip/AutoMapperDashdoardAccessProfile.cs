@@ -13,7 +13,7 @@ namespace TopNews.Core.AutoMapper.Ip
     {
         public AutoMapperDashdoardAccessProfile()
         {
-            CreateMap<DashdoardAccess, DashdoardAccessDto>().ReverseMap();
+            CreateMap<NetworkAddress, NetworkAddressDto>().ReverseMap();
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿@using TopNews.Core.DTOs.Ip;
-@model DashdoardAccessDto
+@model NetworkAddressDto
 
 @{
-    ViewData["Title"] = "Categories";
+    ViewData["Title"] = "IP";
     Layout = "~/Views/Shared/_DashboardLayout.cshtml";
 }
 
@@ -13,12 +13,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>IP managament</h1>
+                    <h1>Category managament</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a asp-action="Index">Home</a></li>
-                        <li class="breadcrumb-item active">Edit IP</li>
+                        <li class="breadcrumb-item active">Create IP</li>
                     </ol>
                 </div>
             </div>
@@ -31,7 +31,7 @@
             <!-- SELECT2 EXAMPLE -->
             <div class="card card-default">
                 <div class="card-header">
-                    <h3 class="card-title">Update IP</h3>
+                    <h3 class="card-title">Create IP</h3>
 
                     <div class="card-tools">
                         <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -46,9 +46,9 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-5 offset-3">
-                            <div class="card card-warning">
+                            <div class="card card-primary">
                                 <div class="card-header">
-                                    <h3 class="card-title">Update IP</h3>
+                                    <h3 class="card-title">New IP</h3>
                                 </div>
                                 <!-- /.card-header -->
                                 <!-- form start -->
@@ -56,16 +56,16 @@
                                 {
                                     <span class="text-danger mt-3">@ViewBag.AuthError</span>
                                 }
-                                <form method="post" asp-controller="DashdoardAccesses" asp-action="Update">
+                                <form method="post" asp-controller="NetworkAddress" asp-action="Create">
                                     <div class="card-body">
                                         <div class="form-group">
-                                            <label>IP Adrress</label>
-                                            <input type="text" asp-for="IpAddress" name="IpAddress" class="form-control" placeholder="IP Adrress">
+                                            <label>IP Address</label>
+                                            <input type="text" name="IpAddress" class="form-control" placeholder="IP Address">
                                         </div>
                                     </div>
                                     <!-- /.card-body -->
                                     <div class="card-footer">
-                                        <button type="submit" class="btn btn-warning">Update</button>
+                                        <button type="submit" class="btn btn-primary">Create</button>
                                     </div>
                                 </form>
                             </div>

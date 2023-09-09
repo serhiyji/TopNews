@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TopNews.Core.Interfaces;
 
-namespace TopNews.Core.Entities
+namespace TopNews.Core.DTOs.Ip
 {
-    public class DashdoardAccess : IEntity
+    public class NetworkAddressDto
     {
-        public int Id { get; set; }
+        public int Id { get; set; } 
         public string IpAddress { get; set; }
     }
 }

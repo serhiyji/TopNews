@@ -25,14 +25,14 @@ namespace TopNews.Infrastructure.Context
         public DbSet<AppUser> AppUser { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Post> Posts { get; set; }
-        public DbSet<DashdoardAccess> DashdoardAccesses { get; set; }
+        public DbSet<NetworkAddress> NetworkAddresses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.SeedCategories();
             modelBuilder.SeedPosts();
-            modelBuilder.SeedDashdoardAccesses();
+            modelBuilder.SeedNetworkAddresses();
 
         }
     }

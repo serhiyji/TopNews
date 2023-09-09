@@ -1,7 +1,7 @@
 ﻿﻿@using Microsoft.AspNetCore.Identity;
 @using TopNews.Core.DTOs.Ip;
 @using TopNews.Core.Entities.User;
-@model List<DashdoardAccessDto>
+@model List<NetworkAddressDto>
 @inject UserManager<AppUser> UserManager
 
 @{
@@ -67,8 +67,8 @@
                                             <td>@item.IpAddress</td>
                                             @if (@User.IsInRole("Administrator"))
                                             {
-                                                <td><a asp-controller="DashdoardAccesses" asp-action="Update" asp-route-id="@item.Id" class="btn btn-block btn-warning btn-sm">Edit</a></td>
-                                                <td><a asp-controller="DashdoardAccesses" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-block btn-danger btn-sm">Delete</a></td>
+                                                <td><a asp-controller="NetworkAddress" asp-action="Update" asp-route-id="@item.Id" class="btn btn-block btn-warning btn-sm">Edit</a></td>
+                                                <td><a asp-controller="NetworkAddress" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-block btn-danger btn-sm">Delete</a></td>
                                             }
                                         </tr>
                                     }
