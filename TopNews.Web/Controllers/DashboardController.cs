@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TopNews.Core.DTOs.Ip;
 using TopNews.Core.DTOs.User;
+using TopNews.Core.Interfaces;
 using TopNews.Core.Services;
 using TopNews.Core.Validation.User;
 using TopNews.Web.Models.ViewModels;
@@ -14,10 +16,12 @@ namespace TopNews.Web.Controllers
     public class DashboardController : Controller
     {
         private readonly UserService _userService;
+        private readonly INetworkAddressService _networkAddressService;
 
-        public DashboardController(UserService userService)
+        public DashboardController(UserService userService, INetworkAddressService networkAddressService)
         {
             _userService = userService;
+            _networkAddressService = networkAddressService;
         }
 
         public IActionResult Index()
@@ -27,10 +31,14 @@ namespace TopNews.Web.Controllers
 
         #region Sign In page
         [AllowAnonymous]
-        public IActionResult SignIn()
+        public async Task<IActionResult> SignInAsync()
         {
             string? ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
-
+            NetworkAddressDto? networkAddressDto = await _networkAddressService.Get(ipAddress);
+            if (networkAddressDto == null)
+            {
+                return NotFound();
+            }
             bool userAuthenticated = HttpContext.User.Identity.IsAuthenticated;
             if (userAuthenticated)
             {
