@@ -18,6 +18,11 @@ namespace TopNews.Infrastructure.Initializers
                 {
                     Id = 1,
                     IpAddress = "0.0.0.0",
+                },
+                new NetworkAddress()
+                {
+                    Id = 2,
+                    IpAddress = "::1"
                 }
             );
         }
