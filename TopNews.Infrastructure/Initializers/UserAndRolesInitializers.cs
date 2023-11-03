@@ -22,6 +22,11 @@ namespace TopNews.Infrastructure.Initializers
             {
                 var context = serviceScore.ServiceProvider.GetService<AppDBContext>();
                 UserManager<AppUser> userManager = serviceScore.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+                try
+                {
+                    await context.Database.MigrateAsync();
+                }
+                catch (Exception ex) {  }
                 
                 if (userManager.FindByEmailAsync("admin@email.com").Result == null)
                 {
